@@ -1,23 +1,23 @@
 {
   "location": {
-    "front": 30,
-    "left": -30
+    "front": 27.25,
+    "left": -27.25
   },
   "absoluteEncoderOffset": 0,
   "drive": {
     "type": "sparkmax_neo",
-    "id": 2,
-    "canbus": 2
+    "id": 4,
+    "canbus": null
   },
   "angle": {
     "type": "sparkmax_neo550",
-    "id": 6,
-    "canbus": 6
+    "id": 8,
+    "canbus": null
   },
   "encoder": {
     "type": "attached",
-    "id": 6,
-    "canbus": 6
+    "id": 8,
+    "canbus": null
   },
   "inverted": {
     "drive": false,
