@@ -39,7 +39,11 @@ public class RobotContainer {
         }
 
         swerveModules = swerveDrive.getModules();
+        
+        //swerveDrive.useExternalFeedbackSensor();
 
+    }
+    public void teleopInit() {
     }
     public void processManualInput() {
         /* double LeftX = controller.getLeftX();
@@ -65,5 +69,5 @@ public class RobotContainer {
             instance = new RobotContainer();
         }
         return instance;
-    }
+    } //53.142857142857
 }

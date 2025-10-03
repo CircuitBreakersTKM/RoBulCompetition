@@ -14,7 +14,9 @@ public class Robot extends TimedRobot {
         robotContainer = RobotContainer.getInstance();
     }
     @Override
-    public void teleopInit() {}
+    public void teleopInit() {
+        robotContainer.teleopInit();
+    }
 
     @Override
     public void teleopPeriodic() {
