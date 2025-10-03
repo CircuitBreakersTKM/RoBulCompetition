@@ -42,17 +42,19 @@ public class RobotContainer {
 
     }
     public void processManualInput() {
-        /*double LeftX = controller.getLeftX();
+        /* double LeftX = controller.getLeftX();
         double LeftY = controller.getLeftY();
 
         double rot = controller.getRightX();
 
         swerveDrive.drive(new Translation2d(LeftX, -LeftY), rot, false, true);
-         */
+         //*/
 
-        //swerveModules[0].setAngle(0);     // Nope
-        //swerveModules[0].setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), trie, 0);   // Nope
-        // Increasing speed = nope
+        
+        for (int i = 0; i < 4; i++) {
+            swerveModules[i].setDesiredState(new SwerveModuleState(0, Rotation2d.fromRotations(0)), true, false);
+            System.out.println(i + ": " + swerveModules[i].getState().angle.getDegrees());
+        }
 
     }
 
