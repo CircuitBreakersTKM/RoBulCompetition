@@ -55,6 +55,7 @@ public class RobotContainer {
          //*/
 
         
+        // Testing for now
         for (int i = 0; i < 4; i++) {
             swerveModules[i].setDesiredState(new SwerveModuleState(0, Rotation2d.fromRotations(0)), true, false);
             System.out.println(i + ": " + swerveModules[i].getState().angle.getDegrees());
