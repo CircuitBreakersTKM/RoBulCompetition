@@ -8,6 +8,8 @@ import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import edu.wpi.first.wpilibj.Filesystem;
 import swervelib.parser.SwerveParser;
+import swervelib.telemetry.SwerveDriveTelemetry;
+import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -34,13 +36,13 @@ public class RobotContainer {
 
         try{
             swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(10);
+            //swerveDrive.useExternalFeedbackSensor();
+            SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
         } catch (Exception e) {
             System.out.println("Error initializing SwerveDrive: " + e.getMessage());
         }
 
         swerveModules = swerveDrive.getModules();
-        
-        //swerveDrive.useExternalFeedbackSensor();
 
     }
     public void teleopInit() {
