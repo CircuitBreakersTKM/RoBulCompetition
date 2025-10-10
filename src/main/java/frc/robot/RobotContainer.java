@@ -48,13 +48,12 @@ public class RobotContainer {
     public void teleopInit() {
     }
     public void processManualInput() {
-        /* double LeftX = controller.getLeftX();
-        double LeftY = controller.getLeftY();
+        // double LeftX = controller.getLeftX();
+        // double LeftY = controller.getLeftY();
 
-        double rot = controller.getRightX();
+        // double rot = controller.getRightX();
 
-        swerveDrive.drive(new Translation2d(LeftX, -LeftY), rot, false, true);
-         //*/
+        // swerveDrive.drive(new Translation2d(LeftX, -LeftY), rot, false, true);
 
         // Cs
         // Testing for now
