@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotation;
 import java.io.File;
 import edu.wpi.first.wpilibj.XboxController;
 import swervelib.SwerveDrive;
+import swervelib.SwerveDriveTest;
 import swervelib.SwerveModule;
 import edu.wpi.first.wpilibj.Filesystem;
 import swervelib.parser.SwerveParser;
@@ -48,18 +49,16 @@ public class RobotContainer {
     public void teleopInit() {
     }
     public void processManualInput() {
-        // double LeftX = controller.getLeftX();
-        // double LeftY = controller.getLeftY();
+        double LeftX = controller.getLeftX();
+        double LeftY = controller.getLeftY();
 
-        // double rot = controller.getRightX();
+        double rot = controller.getRightX();
 
-        // swerveDrive.drive(new Translation2d(LeftX, -LeftY), rot, false, true);
+        swerveDrive.drive(new Translation2d(-LeftY, -LeftX), rot, false, true);
+    }
 
-        // Testing for now
-        for (int i = 0; i < 4; i++) {
-            swerveModules[i].setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), true, false);
-            System.out.println(i + ": " + swerveModules[i].getState().angle.getDegrees());
-        }
+    public void centerWheels() {
+        SwerveDriveTest.centerModules(swerveDrive);
     }
 
     public void close() {

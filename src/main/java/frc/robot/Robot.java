@@ -18,6 +18,11 @@ public class Robot extends TimedRobot {
         robotContainer.teleopInit();
     }
 
+    @Override 
+    public void testPeriodic() {
+        robotContainer.centerWheels();
+    }
+
     @Override
     public void teleopPeriodic() {
         robotContainer.processManualInput();
