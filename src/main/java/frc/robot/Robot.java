@@ -5,6 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.*;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends TimedRobot {
     public RobotContainer robotContainer;
@@ -16,11 +19,6 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         robotContainer.teleopInit();
-    }
-
-    @Override 
-    public void testPeriodic() {
-        robotContainer.centerWheels();
     }
 
     @Override
