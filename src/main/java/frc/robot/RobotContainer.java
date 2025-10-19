@@ -7,7 +7,6 @@ import frc.robot.math.SpeedRateLimiter;
 import frc.robot.network.SmartDashboardHandler;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
-import swervelib.SwerveModule;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import swervelib.parser.SwerveParser;
