@@ -4,15 +4,15 @@ import java.util.ArrayList;
 
 import edu.wpi.first.networktables.*;
 
-public class DashboardValue<T> {
+public class DashboardValue<T extends Object> {
     private final String key;
     private final T defaultValue;
-    private final Class<?> type;
+    private final Class<? extends Object> type;
     private final NetworkTableEntry entry;
 
-    public static ArrayList<DashboardValue<?>> values = new ArrayList<>();
+    public static ArrayList<DashboardValue<? extends Object>> values = new ArrayList<>();
 
-    public DashboardValue(String key, T defaultValue, Class<?> classType) {
+    public DashboardValue(String key, T defaultValue, Class<? extends Object> classType) {
         if (defaultValue == null) throw new IllegalArgumentException("defaultValue cannot be null");
 
         this.key = key;
