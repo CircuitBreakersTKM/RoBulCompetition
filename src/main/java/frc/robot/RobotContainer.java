@@ -1,14 +1,10 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Rotation;
-
 import java.io.File;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot.*;
+import frc.robot.math.MathHelper;
+import frc.robot.math.SpeedRateLimiter;
+import frc.robot.network.SmartDashboardHandler;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
 import swervelib.SwerveModule;
@@ -17,48 +13,26 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 public class RobotContainer {
     private static RobotContainer instance = null;
-    public enum AutoMode {
-        NONE,
-        DRIVE,
-        CENTER_WHEELS,
-        PIDF_TUNER,
-        CRAB_WALK
-    }
-
-    public final SendableChooser<AutoMode> autoModeChooser = new SendableChooser<>();
 
     private final XboxController controller = new XboxController(0);
     private SwerveDrive swerveDrive;
-    private double prevSpeedX = 0;
-    private double prevSpeedY = 0;
-    private double prevRot = 0;
-
-    private double maxSpeed = 3;
-    private double minSpeed = 1.5;
-
-    private SwerveModule[] swerveModules;
+    
+    private double maxSpeed = 4.8;
+    private double minSpeed = 2;
 
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
+
+    private SpeedRateLimiter xSpeedLimiter = new SpeedRateLimiter(3, 9, 0);
+    private SpeedRateLimiter ySpeedLimiter = new SpeedRateLimiter(3, 9, 0);
+    private SpeedRateLimiter rotLimiter = new SpeedRateLimiter(Math.PI, 3*Math.PI, 0);
     
     public RobotContainer() {
-        autoModeChooser.setDefaultOption("Drive", AutoMode.DRIVE);
-        autoModeChooser.addOption("None", AutoMode.NONE);
-        autoModeChooser.addOption("Crab Walk", AutoMode.CRAB_WALK);
-        autoModeChooser.addOption("Center Wheels", AutoMode.CENTER_WHEELS);
-        autoModeChooser.addOption("PIDF Tuner", AutoMode.PIDF_TUNER);
-
-        SmartDashboard.putData("Auto Mode", autoModeChooser);
-        SmartDashboard.putNumber("Turn sensitivity", 0.7);
-        SmartDashboard.putNumber("Joystick deadzone", 0.1);        
-        SmartDashboard.putNumber("Max speed (m/s)", maxSpeed);
-        SmartDashboard.putNumber("Max speed (m/s)", 3);
-        SmartDashboard.putNumber("Max angular velocity (rad/s)", Math.PI);
+        SmartDashboardHandler.Init();
 
         if (instance != null) {
             instance.close();
@@ -72,14 +46,13 @@ public class RobotContainer {
         swerveDrive = null;
 
         try{
-            swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(10);
+            swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(4.8);
             swerveDrive.useInternalFeedbackSensor();
             SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+
         } catch (Exception e) {
             System.out.println("Error initializing SwerveDrive: " + e.getMessage());
         }
-
-        swerveModules = swerveDrive.getModules();
     }
     public void teleopInit() {
         double voltage = pdh.getVoltage();
@@ -93,92 +66,71 @@ public class RobotContainer {
             speed = minSpeed;
         }
 
-        SmartDashboard.putNumber("Max speed (m/s)", speed);
+        SmartDashboardHandler.MAX_SPEED.set(speed);
+
+        xSpeedLimiter = new SpeedRateLimiter(SmartDashboardHandler.MAX_ACCELERATION.get(), 9, 0);
+        ySpeedLimiter = new SpeedRateLimiter(SmartDashboardHandler.MAX_ACCELERATION.get(), 9, 0);
+        rotLimiter = new SpeedRateLimiter(SmartDashboardHandler.MAX_ANGULAR_ACCELERATION.get(), 3*Math.PI, 0);
     }
     public void processManualInput() {
 
-        switch (autoModeChooser.getSelected()) {
-            case DRIVE:
-                double RightX = controller.getRightX() * SmartDashboard.getNumber("Turn sensitivity", 0.7);
-                
+        switch (SmartDashboardHandler.autoModeChooser.getSelected()) {
+            case DRIVE: {
+                // Get joystick inputs
+                double RightX = controller.getRightX() * SmartDashboardHandler.TURN_SENSITIVITY.get();
                 double LeftX = controller.getLeftX();
                 double LeftY = controller.getLeftY();
 
-                double deadzone = SmartDashboard.getNumber("Joystick deadzone", 0.1);
+                // Apply deadzone
+                double deadzone = SmartDashboardHandler.JOYSTICK_DEADZONE.get();
+                RightX = MathUtil.applyDeadband(RightX, deadzone);
+                LeftX = MathUtil.applyDeadband(LeftX, deadzone);
+                LeftY = MathUtil.applyDeadband(LeftY, deadzone);
 
-                if (Math.abs(LeftX) < deadzone) {
-                    LeftX = 0;
-                }
-                if (Math.abs(LeftY) < deadzone) {
-                    LeftY = 0;
-                }
-                if (Math.abs(RightX) < deadzone) {
-                    RightX = 0;
-                }
+                // Scale inputs and apply max speeds
+                double rot = MathHelper.ScaleInput(RightX) * SmartDashboardHandler.MAX_ANGULAR_SPEED.get();
+                double speedX = -MathHelper.ScaleInput(LeftX)*SmartDashboardHandler.MAX_SPEED.get();
+                double speedY = -MathHelper.ScaleInput(LeftY)*SmartDashboardHandler.MAX_SPEED.get();
 
-                double rot = SmartDashboard.getNumber("Max angular velocity (rad/s)", Math.PI/2)*RightX*RightX;
-                if (RightX < 0) {
-                    rot = -rot;
-                }
+                // Apply rate limiting
+                rot = rotLimiter.calculate(rot);
+                speedX = xSpeedLimiter.calculate(speedX);
+                speedY = ySpeedLimiter.calculate(speedY);
 
-                double speedX = -SmartDashboard.getNumber("Max speed (m/s)", 3.0)*LeftX*LeftX;
-                if (LeftX < 0) {
-                    speedX = -speedX;
-                    
-                }
-
-                double speedY = -SmartDashboard.getNumber("Max speed (m/s)", 3.0)*LeftY*LeftY;
-                if (LeftY < 0) {
-                    speedY = -speedY;
-                }
-
-                if (Math.abs(prevSpeedX) > Math.abs(speedX)) {
-                    prevSpeedX = speedX;
-                }
-                else {  
-                    prevSpeedX += (speedX - prevSpeedX) / 35;
-                }
-
-                if (Math.abs(prevSpeedY) > Math.abs(speedY)) {
-                    prevSpeedY = speedY;
-                }
-                else {  
-                    prevSpeedY += (speedY - prevSpeedY) / 35;
-                }
-
-                if (Math.abs(prevRot) > Math.abs(rot)) {
-                    prevRot = rot;
-                }
-                else {  
-                    prevRot += (rot - prevRot) / 15;
-                }
-
-                swerveDrive.drive(new Translation2d(prevSpeedY, prevSpeedX), -prevRot, false, true);
-            break;
-            case CENTER_WHEELS:
+                // Drive the swerve drive
+                swerveDrive.drive(new Translation2d(speedY, speedX), -rot, false, true);
+                break;
+            }
+            case CENTER_WHEELS: {
+                // Center all swerve modules
                 SwerveDriveTest.centerModules(swerveDrive);
-            break;
-            case PIDF_TUNER:
-                for (SwerveModule module : swerveModules) {
-                    module.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(0)), false, false);
-                }
-            case CRAB_WALK:
+                break;
+            }
+            case CRAB_WALK: {
+                // Get speed and POV from controller
                 double speed = controller.getRightTriggerAxis();
-                if (controller.getAButton()) {
-                    swerveDrive.drive(new Translation2d(-1.0 * speed, 0.0), 0.0, false, false);
+                double pov = controller.getPOV();
+
+                // Calculate rotation input
+                double rot = MathUtil.applyDeadband(controller.getRightX(), SmartDashboardHandler.JOYSTICK_DEADZONE.get());
+                rot *= SmartDashboardHandler.TURN_SENSITIVITY.get();
+                rot = MathHelper.ScaleInput(rot) * SmartDashboardHandler.MAX_ANGULAR_SPEED.get();
+
+                if (pov != -1) {
+                    // Calculate crab walk translation based on POV angle
+                    double angleRad = Math.toRadians(pov);
+                    double crabX = Math.sin(angleRad) * speed * SmartDashboardHandler.MAX_SPEED.get();
+                    double crabY = Math.cos(angleRad) * speed * SmartDashboardHandler.MAX_SPEED.get();
+
+                    crabX = xSpeedLimiter.calculate(crabX);
+                    crabY = ySpeedLimiter.calculate(crabY);
+
+                    swerveDrive.drive(new Translation2d(crabX, crabY), rot, false, false);
+                } else {
+                    swerveDrive.drive(new Translation2d(0, 0), rot, false, false);
                 }
-                else if (controller.getBButton()) {
-                    swerveDrive.drive(new Translation2d(0.0, -1.0 * speed), 0.0, false, false);
-                }
-                else if (controller.getXButton()) {
-                    swerveDrive.drive(new Translation2d(0.0, 1.0 * speed), 0.0, false, false);
-                }
-                else if (controller.getYButton()) {
-                    swerveDrive.drive(new Translation2d(1.0 * speed, 0.0), 0.0, false, false);
-                }
-                else {
-                    swerveDrive.drive(new Translation2d(0.0, 0.0), 0.0, false, true);
-                }
+                break;
+            }
             default:
                 break;
         }
@@ -191,5 +143,5 @@ public class RobotContainer {
             instance = new RobotContainer();
         }
         return instance;
-    } //53.142857142857
+    }
 }
