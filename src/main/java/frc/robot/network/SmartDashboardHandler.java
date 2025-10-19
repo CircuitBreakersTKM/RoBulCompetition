@@ -13,21 +13,26 @@ public class SmartDashboardHandler {
 
     public static final SendableChooser<AutoMode> autoModeChooser = new SendableChooser<>();
 
-    // JOYSTICK parameters
+    // CONTROLLER parameters
     public static final DashboardValue<Double> TURN_SENSITIVITY = new DashboardValue<>(
-        "CircuitBreakers/Joystick/Turn sensitivity", 0.7, Double.class);
+        "Controller/Turn sensitivity", 0.7);
     public static final DashboardValue<Double> JOYSTICK_DEADZONE = new DashboardValue<>(
-        "CircuitBreakers/Joystick/Joystick deadzone", 0.1, Double.class);
-    
+        "Controller/Joystick deadzone", 0.1);
+    public static final DashboardValue<Double> TRIGGER_AXIS_DEADZONE = new DashboardValue<>(
+        "Controller/Trigger axis deadzone", 0.05);
+    public static final DashboardValue<Double> TURN_SENSITIVITY_FLOAT = new DashboardValue<>(
+        "Controller/Turn sensitivity float", 0.7);    
+
+        
     // CHASSIS parameters
     public static final DashboardValue<Double> MAX_SPEED = new DashboardValue<>(
-        "CircuitBreakers/Chassis/Max speed (ms^-1)", 4.8, Double.class);
+        "Chassis/Max speed (ms^-1)", 4.8);
     public static final DashboardValue<Double> MAX_ANGULAR_SPEED = new DashboardValue<>(
-        "CircuitBreakers/Chassis/Max angular speed (rads^-1)", Math.PI, Double.class);
+        "Chassis/Max angular speed (rads^-1)", 4*Math.PI);
     public static final DashboardValue<Double> MAX_ACCELERATION = new DashboardValue<>(
-        "CircuitBreakers/Chassis/Max acceleration (ms^-2)", 3.0, Double.class);
+        "Chassis/Max acceleration (ms^-2)", 3.0);
     public static final DashboardValue<Double> MAX_ANGULAR_ACCELERATION = new DashboardValue<>(
-        "CircuitBreakers/Chassis/Max angular acceleration (rads^-2)", Math.PI, Double.class);
+        "Chassis/Max angular acceleration (rads^-2)", 2*Math.PI);
 
     public static void Init() {
         autoModeChooser.setDefaultOption("Drive", AutoMode.DRIVE);
