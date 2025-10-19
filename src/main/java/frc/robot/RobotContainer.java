@@ -108,8 +108,10 @@ public class RobotContainer {
             }
             case CRAB_WALK: {
                 // Get speed and POV from controller
-                double speed = controller.getRightTriggerAxis();
+                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), SmartDashboardHandler.TRIGGER_AXIS_DEADZONE.get());
                 double pov = controller.getPOV();
+
+                speed = MathHelper.ScaleInput(speed);
 
                 // Calculate rotation input
                 double rot = MathUtil.applyDeadband(controller.getRightX(), SmartDashboardHandler.JOYSTICK_DEADZONE.get());
@@ -125,7 +127,7 @@ public class RobotContainer {
                     crabX = xSpeedLimiter.calculate(crabX);
                     crabY = ySpeedLimiter.calculate(crabY);
 
-                    swerveDrive.drive(new Translation2d(crabX, crabY), rot, false, false);
+                    swerveDrive.drive(new Translation2d(crabY, crabX), rot, false, false);
                 } else {
                     swerveDrive.drive(new Translation2d(0, 0), rot, false, false);
                 }
