@@ -4,7 +4,7 @@ import java.io.File;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.math.MathHelper;
 import frc.robot.math.SpeedRateLimiter;
-import frc.robot.network.SmartDashboardHandler;
+import frc.robot.network.NetworkHandler;
 import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -25,13 +25,13 @@ public class RobotContainer {
     private double minSpeed = 2;
 
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
-
-    private SpeedRateLimiter xSpeedLimiter = new SpeedRateLimiter(3, 9, 0);
-    private SpeedRateLimiter ySpeedLimiter = new SpeedRateLimiter(3, 9, 0);
-    private SpeedRateLimiter rotLimiter = new SpeedRateLimiter(Math.PI, 3*Math.PI, 0);
+    
+    private SpeedRateLimiter xSpeedLimiter;
+    private SpeedRateLimiter ySpeedLimiter;
+    private SpeedRateLimiter rotLimiter;
     
     public RobotContainer() {
-        SmartDashboardHandler.Init();
+        NetworkHandler.Init();
 
         if (instance != null) {
             instance.close();
@@ -55,41 +55,33 @@ public class RobotContainer {
     }
     public void teleopInit() {
         double voltage = pdh.getVoltage();
-        double speed = maxSpeed;
+        double k = (voltage - 11.5) / 0.5;
 
-        if (voltage < 12.0 && voltage > 11.5) {
-            double k = (voltage - 11.5) / 0.5;
-            speed = minSpeed + k * (maxSpeed - minSpeed);
-        }
-        else if (voltage <= 11.5) {
-            speed = minSpeed;
-        }
+        NetworkHandler.MAX_SPEED.set(MathHelper.Interpolate(minSpeed, maxSpeed, k));
 
-        SmartDashboardHandler.MAX_SPEED.set(speed);
-
-        xSpeedLimiter = new SpeedRateLimiter(SmartDashboardHandler.MAX_ACCELERATION.get(), 9, 0);
-        ySpeedLimiter = new SpeedRateLimiter(SmartDashboardHandler.MAX_ACCELERATION.get(), 9, 0);
-        rotLimiter = new SpeedRateLimiter(SmartDashboardHandler.MAX_ANGULAR_ACCELERATION.get(), 3*Math.PI, 0);
+        xSpeedLimiter = new SpeedRateLimiter(NetworkHandler.MAX_ACCELERATION.get(), 15, 0, 0.5);
+        ySpeedLimiter = new SpeedRateLimiter(NetworkHandler.MAX_ACCELERATION.get(), 15, 0, 0.5);
+        rotLimiter = new SpeedRateLimiter(NetworkHandler.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 0, 1);
     }
     public void processManualInput() {
 
-        switch (SmartDashboardHandler.autoModeChooser.getSelected()) {
+        switch (NetworkHandler.autoModeChooser.getSelected()) {
             case DRIVE: {
                 // Get joystick inputs
-                double RightX = controller.getRightX() * SmartDashboardHandler.TURN_SENSITIVITY.get();
+                double RightX = controller.getRightX() * NetworkHandler.TURN_SENSITIVITY.get();
                 double LeftX = controller.getLeftX();
                 double LeftY = controller.getLeftY();
 
                 // Apply deadzone
-                double deadzone = SmartDashboardHandler.JOYSTICK_DEADZONE.get();
+                double deadzone = NetworkHandler.JOYSTICK_DEADZONE.get();
                 RightX = MathUtil.applyDeadband(RightX, deadzone);
                 LeftX = MathUtil.applyDeadband(LeftX, deadzone);
                 LeftY = MathUtil.applyDeadband(LeftY, deadzone);
 
                 // Scale inputs and apply max speeds
-                double rot = MathHelper.ScaleInput(RightX) * SmartDashboardHandler.MAX_ANGULAR_SPEED.get();
-                double speedX = -MathHelper.ScaleInput(LeftX)*SmartDashboardHandler.MAX_SPEED.get();
-                double speedY = -MathHelper.ScaleInput(LeftY)*SmartDashboardHandler.MAX_SPEED.get();
+                double rot = MathHelper.ScaleRotInput(RightX) * NetworkHandler.MAX_ANGULAR_SPEED.get();
+                double speedX = -MathHelper.ScaleSpeedInput(LeftX)*NetworkHandler.MAX_SPEED.get();
+                double speedY = -MathHelper.ScaleSpeedInput(LeftY)*NetworkHandler.MAX_SPEED.get();
 
                 // Apply rate limiting
                 rot = rotLimiter.calculate(rot);
@@ -107,21 +99,21 @@ public class RobotContainer {
             }
             case CRAB_WALK: {
                 // Get speed and POV from controller
-                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), SmartDashboardHandler.TRIGGER_AXIS_DEADZONE.get());
+                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkHandler.TRIGGER_AXIS_DEADZONE.get());
                 double pov = controller.getPOV();
 
-                speed = MathHelper.ScaleInput(speed);
+                speed = MathHelper.ScaleSpeedInput(speed);
 
                 // Calculate rotation input
-                double rot = MathUtil.applyDeadband(controller.getRightX(), SmartDashboardHandler.JOYSTICK_DEADZONE.get());
-                rot *= SmartDashboardHandler.TURN_SENSITIVITY.get();
-                rot = MathHelper.ScaleInput(rot) * SmartDashboardHandler.MAX_ANGULAR_SPEED.get();
+                double rot = MathUtil.applyDeadband(controller.getRightX(), NetworkHandler.JOYSTICK_DEADZONE.get());
+                rot *= NetworkHandler.TURN_SENSITIVITY.get();
+                rot = -MathHelper.ScaleRotInput(rot) * NetworkHandler.MAX_ANGULAR_SPEED.get();
 
                 if (pov != -1) {
                     // Calculate crab walk translation based on POV angle
                     double angleRad = Math.toRadians(pov);
-                    double crabX = Math.sin(angleRad) * speed * SmartDashboardHandler.MAX_SPEED.get();
-                    double crabY = Math.cos(angleRad) * speed * SmartDashboardHandler.MAX_SPEED.get();
+                    double crabX = -Math.sin(angleRad) * speed * NetworkHandler.MAX_SPEED.get();
+                    double crabY = Math.cos(angleRad) * speed * NetworkHandler.MAX_SPEED.get();
 
                     crabX = xSpeedLimiter.calculate(crabX);
                     crabY = ySpeedLimiter.calculate(crabY);
