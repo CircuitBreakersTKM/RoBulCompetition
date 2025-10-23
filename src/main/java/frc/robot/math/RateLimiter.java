@@ -1,8 +1,8 @@
 package frc.robot.math;
 
-public class SpeedRateLimiter {
-    private final double accelerationLimit;   // units per second
-    private final double decelerationLimit;   // units per second
+public class RateLimiter {
+    private final double accelerationLimit;   // m/s^2, how fast we can accelerate
+    private final double decelerationLimit;   // m/s^2, how fast we can decelerate
     private final double ignoreIfWithin;
 
     private double lastValue;
@@ -13,10 +13,10 @@ public class SpeedRateLimiter {
      * @param decelerationLimit max rate when moving toward 0
      * @param initialValue starting value
      */
-    public SpeedRateLimiter(double accelerationLimit, double decelerationLimit, double initialValue, double ignoreIfWithin) {
+    public RateLimiter(double accelerationLimit, double decelerationLimit, double ignoreIfWithin) {
         this.accelerationLimit = accelerationLimit;
         this.decelerationLimit = decelerationLimit;
-        this.lastValue = initialValue;
+        this.lastValue = 0;
         this.ignoreIfWithin = ignoreIfWithin;
         this.lastTime = System.nanoTime();
     }

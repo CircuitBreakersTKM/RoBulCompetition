@@ -13,7 +13,7 @@ public class MathHelper {
         double sign = Math.signum(input);
         double absInput = Math.abs(input);
 
-        double scaledInput = Math.pow(absInput, 2.1);
+        double scaledInput = Math.pow(absInput, 1.8);
 
         return sign * scaledInput;
     }

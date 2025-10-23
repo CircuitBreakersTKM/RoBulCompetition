@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class NetworkHandler {
     public static enum AutoMode {
         NONE,
-        DRIVE,
+        DRIVE_LASER,
         CENTER_WHEELS,
         CRAB_WALK
     }
@@ -32,8 +32,12 @@ public class NetworkHandler {
     public static final DashboardValue<Double> MAX_ANGULAR_ACCELERATION = new DashboardValue<>(
         "Chassis/Max angular acceleration (rads^-2)", 2*Math.PI);
 
+    // LASER TURRET parameters
+    public static final DashboardValue<Double> LASER_MOTOR_MAX_SPEED = new DashboardValue<>(
+        "Laser Turret/Motor speed", 0.25);
+
     public static void Init() {
-        autoModeChooser.setDefaultOption("Drive", AutoMode.DRIVE);
+        autoModeChooser.setDefaultOption("Drive + laser", AutoMode.DRIVE_LASER);
         autoModeChooser.addOption("None", AutoMode.NONE);
         autoModeChooser.addOption("Crab Walk", AutoMode.CRAB_WALK);
         autoModeChooser.addOption("Center Wheels", AutoMode.CENTER_WHEELS);
