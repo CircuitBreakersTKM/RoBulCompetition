@@ -11,6 +11,7 @@ import frc.robot.math.RateLimiter;
 import frc.robot.math.RateLimiter2D;
 import frc.robot.network.NetworkHandler;
 import swervelib.SwerveDrive;
+import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
@@ -18,13 +19,15 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 public class SwerveDriveSubsystem {
     public final SwerveDrive swerveDrive;
 
-    private double maxSpeed = 4.8;
+    private double maxSpeed = 2.5;
     private double minSpeed = 2;
 
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
     
     private RateLimiter2D speedLimiter;
     private RateLimiter rotLimiter;
+
+    private final SwerveModule[] modules;
     
     public SwerveDriveSubsystem() throws IOException {
         // Specify the directory containing your JSON configuration files
@@ -33,6 +36,8 @@ public class SwerveDriveSubsystem {
         swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(4.8);
         swerveDrive.useInternalFeedbackSensor();
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
+
+        modules = swerveDrive.getModules();
     }
 
     public void applyLowBatteryLimiters() {
@@ -76,8 +81,18 @@ public class SwerveDriveSubsystem {
         // Apply rate limiting
         rot = rotLimiter.calculate(rot);
         Translation2d limitedSpeeds = speedLimiter.calculate(new Translation2d(speedX, speedY));
-
-
         swerveDrive.drive(limitedSpeeds, rot, fieldRelative, isOpenLoop);
+    }
+    public void zeroGyro() {
+        swerveDrive.zeroGyro();
+    }
+
+    public void stopIf(boolean required) {
+        if (!required) return;
+        
+        for (SwerveModule module : modules) {
+            module.getDriveMotor().set(0);
+            module.getAngleMotor().set(0);
+        }
     }
 }

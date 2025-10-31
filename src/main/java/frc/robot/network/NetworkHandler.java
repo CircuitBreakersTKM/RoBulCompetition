@@ -24,17 +24,22 @@ public class NetworkHandler {
         
     // CHASSIS parameters
     public static final DashboardValue<Double> MAX_SPEED = new DashboardValue<>(
-        "Chassis/Max speed (ms^-1)", 4.8);
+        "Chassis/Max speed (ms^-1)", 2.5);
     public static final DashboardValue<Double> MAX_ANGULAR_SPEED = new DashboardValue<>(
-        "Chassis/Max angular speed (rads^-1)", 4.1);
+        "Chassis/Max angular speed (rads^-1)", 1.8);
     public static final DashboardValue<Double> MAX_ACCELERATION = new DashboardValue<>(
         "Chassis/Max acceleration (ms^-2)", 3.0);
     public static final DashboardValue<Double> MAX_ANGULAR_ACCELERATION = new DashboardValue<>(
         "Chassis/Max angular acceleration (rads^-2)", 2*Math.PI);
+    public static final DashboardValue<Boolean> ZERO_ANGLE = new DashboardValue<>(
+        "Chassis/Zero angle", false);
 
     // LASER TURRET parameters
     public static final DashboardValue<Double> LASER_MOTOR_MAX_SPEED = new DashboardValue<>(
         "Laser Turret/Motor speed", 0.25);
+
+    // CAMERA TOWER parameters
+    
 
     public static void Init() {
         autoModeChooser.setDefaultOption("Drive + laser", AutoMode.DRIVE_LASER);
