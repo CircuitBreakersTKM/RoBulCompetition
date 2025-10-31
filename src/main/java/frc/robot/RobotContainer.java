@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
+import frc.robot.camera.CameraTower;
 import frc.robot.laser.LaserTurret;
 import frc.robot.network.NetworkHandler;
 import frc.robot.network.NetworkHandler.AutoMode;
@@ -17,6 +18,7 @@ public class RobotContainer {
 
     private final SwerveDriveSubsystem swerveDriveSubsystem;
     private final LaserTurret laserTurret = new LaserTurret(11, 12);
+    private final CameraTower cameraTower = new CameraTower(21);
 
     private AutoMode lastMode = NetworkHandler.autoModeChooser.getSelected();
 
@@ -60,6 +62,9 @@ public class RobotContainer {
                 double rot = controller.getLeftTriggerAxis() - controller.getRightTriggerAxis();
                 double speedX = controller.getLeftX();
                 double speedY = controller.getLeftY();
+
+                double cameraSpeed = controller.getLeftBumperButton() ? 1.0 :
+                                     controller.getRightBumperButton() ? -1.0 : 0.0;
                 
                 
                 // Apply deadzone
@@ -75,6 +80,7 @@ public class RobotContainer {
                 // Drive the swerve drive
                 swerveDriveSubsystem.processCarteseanInput(new Translation2d(-speedX, -speedY), rot, true, true);
                 laserTurret.setSpeeds(laserAzimuthSpeed, laserAltitudeSpeed);
+                cameraTower.setSpeeds(cameraSpeed);
                 break;
             }
             case CENTER_WHEELS: {

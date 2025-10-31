@@ -35,6 +35,8 @@ public class SwerveDriveSubsystem {
     
         swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(4.8);
         swerveDrive.useInternalFeedbackSensor();
+        swerveDrive.setHeadingCorrection(false);
+        swerveDrive.setCosineCompensator(false);
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
 
         modules = swerveDrive.getModules();

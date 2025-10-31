@@ -39,7 +39,8 @@ public class NetworkHandler {
         "Laser Turret/Motor speed", 0.25);
 
     // CAMERA TOWER parameters
-    
+    public static final DashboardValue<Double> CAMERA_MOTOR_MAX_SPEED = new DashboardValue<>(
+        "Camera Tower/Motor speed", 0.25);
 
     public static void Init() {
         autoModeChooser.setDefaultOption("Drive + laser", AutoMode.DRIVE_LASER);
