@@ -106,3 +106,42 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
+
+// ssh-keygen -t rsa
+// type "%USERPROFILE%\.ssh\id_rsa.pub" | ssh pi@10.0.0.x "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
+
+// === Custom deploy step for Raspberry Pi coprocessor ===
+import org.gradle.api.tasks.Exec
+
+def piAddress = "10.0.3.11"
+def piUser = "pi"
+def piPath = "/home/pi/qrdetector/"
+
+tasks.register("deployCoprocessor") {
+    group = "FRC"
+    description = "Deploys QR Detector to Raspberry Pi"
+
+    doLast {
+        println "Creating directory on ${piAddress}..."
+        exec {
+            commandLine "ssh", "${piUser}@${piAddress}", "mkdir", "-p", piPath
+        }
+
+        println "Copying qrdetector.py..."
+        exec {
+            commandLine "scp", "coprocessor/qrdetector.py", "${piUser}@${piAddress}:${piPath}"
+        }
+
+        println "Restarting service on Raspberry Pi..."
+        exec {
+            commandLine "ssh", "${piUser}@${piAddress}", "sudo", "systemctl", "restart", "qr-detector.service"
+        }
+
+        println "✅ Deploy complete."
+    }
+}
+
+// Hook it into WPILib's deploy
+tasks.named("deploy") {
+    finalizedBy("deployCoprocessor")
+}
