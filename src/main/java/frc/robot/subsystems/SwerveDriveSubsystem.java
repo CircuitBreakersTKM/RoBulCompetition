@@ -1,4 +1,4 @@
-package frc.robot.swerve;
+package frc.robot.subsystems;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,17 +6,18 @@ import java.io.IOException;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.interfaces.MotorizedSubsystem;
 import frc.robot.math.MathHelper;
 import frc.robot.math.RateLimiter;
 import frc.robot.math.RateLimiter2D;
-import frc.robot.network.NetworkHandler;
 import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
-public class SwerveDriveSubsystem {
+public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubsystem{
     public final SwerveDrive swerveDrive;
 
     private double maxSpeed = 2.5;
@@ -46,21 +47,21 @@ public class SwerveDriveSubsystem {
         double voltage = pdh.getVoltage();
         double k = (voltage - 11.5) / 0.5;
 
-        NetworkHandler.MAX_SPEED.set(MathHelper.Interpolate(minSpeed, maxSpeed, k));
+        NetworkHandlerSubsystem.MAX_SPEED.set(MathHelper.Interpolate(minSpeed, maxSpeed, k));
 
-        speedLimiter = new RateLimiter2D(NetworkHandler.MAX_ACCELERATION.get(), 15, 0.5);
-        rotLimiter = new RateLimiter(NetworkHandler.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
+        speedLimiter = new RateLimiter2D(NetworkHandlerSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
+        rotLimiter = new RateLimiter(NetworkHandlerSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
     }
 
     public void processCarteseanInput(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         // Scale inputs and apply max speeds
-        double rot = MathHelper.ScaleRotInput(rotation) * NetworkHandler.MAX_ANGULAR_SPEED.get() * NetworkHandler.TURN_SENSITIVITY.get();
+        double rot = MathHelper.ScaleRotInput(rotation) * NetworkHandlerSubsystem.MAX_ANGULAR_SPEED.get() * NetworkHandlerSubsystem.TURN_SENSITIVITY.get();
         
         // For translation, we calculate polar coordinates to apply a non-linear scaling without affecting direction
         double magnitude = Math.hypot(translation.getY(), translation.getX());
         double angle = Math.atan2(translation.getX(), translation.getY());
 
-        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkHandler.MAX_SPEED.get();
+        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkHandlerSubsystem.MAX_SPEED.get();
         double speedX = magnitude * Math.cos(angle);
         double speedY = magnitude * Math.sin(angle);
 
@@ -73,9 +74,9 @@ public class SwerveDriveSubsystem {
     }
     public void processPolarInput(double magnitude, double angle, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         // Scale inputs and apply max speeds
-        double rot = MathHelper.ScaleRotInput(rotation) * NetworkHandler.MAX_ANGULAR_SPEED.get() * NetworkHandler.TURN_SENSITIVITY.get();
+        double rot = MathHelper.ScaleRotInput(rotation) * NetworkHandlerSubsystem.MAX_ANGULAR_SPEED.get() * NetworkHandlerSubsystem.TURN_SENSITIVITY.get();
         
-        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkHandler.MAX_SPEED.get();
+        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkHandlerSubsystem.MAX_SPEED.get();
 
         double speedX = magnitude * Math.cos(angle);
         double speedY = magnitude * Math.sin(angle);
@@ -89,12 +90,21 @@ public class SwerveDriveSubsystem {
         swerveDrive.zeroGyro();
     }
 
-    public void stopIf(boolean required) {
-        if (!required) return;
-        
+    @Override
+    public void setSpeed(double... speeds) {
+        throw new UnsupportedOperationException("Use processCarteseanInput or processPolarInput methods to control the swerve drive.");
+    }
+    @Override
+    public void stop() {
         for (SwerveModule module : modules) {
             module.getDriveMotor().set(0);
             module.getAngleMotor().set(0);
+        }
+    }
+    @Override
+    public void stopIf(boolean required) {
+        if (required) {
+            stop();
         }
     }
 }

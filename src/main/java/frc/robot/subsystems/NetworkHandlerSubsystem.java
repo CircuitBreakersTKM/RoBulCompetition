@@ -1,12 +1,14 @@
-package frc.robot.network;
+package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.network.DashboardValue;
 
-public class NetworkHandler {
+public class NetworkHandlerSubsystem {
     public static enum AutoMode {
         NONE,
-        DRIVE_LASER,
+        JOYSTICK_DRIVE,
         CENTER_WHEELS,
         CRAB_WALK
     }
@@ -43,11 +45,11 @@ public class NetworkHandler {
         "Camera Tower/Motor speed", 0.25);
 
     public static void Init() {
-        autoModeChooser.setDefaultOption("Drive + laser", AutoMode.DRIVE_LASER);
+        autoModeChooser.setDefaultOption("Joystick Drive", AutoMode.JOYSTICK_DRIVE);
         autoModeChooser.addOption("None", AutoMode.NONE);
         autoModeChooser.addOption("Crab Walk", AutoMode.CRAB_WALK);
         autoModeChooser.addOption("Center Wheels", AutoMode.CENTER_WHEELS);
-        SmartDashboard.putData("Auto Mode", NetworkHandler.autoModeChooser);
+        SmartDashboard.putData("Auto Mode", NetworkHandlerSubsystem.autoModeChooser);
 
         for (DashboardValue<?> value : DashboardValue.values) {
             value.setDefault();

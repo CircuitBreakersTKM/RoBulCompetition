@@ -1,14 +1,13 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
-import frc.robot.camera.CameraTower;
-import frc.robot.laser.LaserTurret;
-import frc.robot.network.NetworkHandler;
-import frc.robot.network.NetworkHandler.AutoMode;
-import frc.robot.swerve.SwerveDriveSubsystem;
+import frc.robot.subsystems.CameraTowerSubsystem;
+import frc.robot.subsystems.LaserTurretSubsystem;
+import frc.robot.subsystems.NetworkHandlerSubsystem;
+import frc.robot.subsystems.SwerveDriveSubsystem;
+import frc.robot.subsystems.NetworkHandlerSubsystem.AutoMode;
 import swervelib.SwerveDriveTest;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class RobotContainer {
@@ -17,10 +16,10 @@ public class RobotContainer {
     private final XboxController controller = new XboxController(0);
 
     private final SwerveDriveSubsystem swerveDriveSubsystem;
-    private final LaserTurret laserTurret = new LaserTurret(11, 12);
-    private final CameraTower cameraTower = new CameraTower(21);
+    private final LaserTurretSubsystem laserTurret = new LaserTurretSubsystem(11, 12);
+    private final CameraTowerSubsystem cameraTower = new CameraTowerSubsystem(21);
 
-    private AutoMode lastMode = NetworkHandler.autoModeChooser.getSelected();
+    private AutoMode lastMode = NetworkHandlerSubsystem.autoModeChooser.getSelected();
 
     private boolean moving = false;
     
@@ -29,7 +28,7 @@ public class RobotContainer {
             instance.close();
         }
         else {
-            NetworkHandler.Init();
+            NetworkHandlerSubsystem.Init();
         }
 
         try {
@@ -37,6 +36,7 @@ public class RobotContainer {
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize SwerveDriveSubsystem", e);
         }
+
         instance = this;
     }
     public void teleopInit() {
@@ -45,19 +45,19 @@ public class RobotContainer {
     public void OnLastModeChange(AutoMode lastAutoMode, AutoMode newAutoMode) {
     }
     public void processManualInput() {
-        AutoMode currentMode = NetworkHandler.autoModeChooser.getSelected();
+        AutoMode currentMode = NetworkHandlerSubsystem.autoModeChooser.getSelected();
         if (lastMode != currentMode) {
             OnLastModeChange(lastMode, currentMode);
-            lastMode = NetworkHandler.autoModeChooser.getSelected();
+            lastMode = NetworkHandlerSubsystem.autoModeChooser.getSelected();
         }
 
-        if (NetworkHandler.ZERO_ANGLE.get()) {
+        if (NetworkHandlerSubsystem.ZERO_ANGLE.get()) {
             swerveDriveSubsystem.zeroGyro();
-            NetworkHandler.ZERO_ANGLE.set(false);
+            NetworkHandlerSubsystem.ZERO_ANGLE.set(false);
         }
 
         switch (currentMode) {
-            case DRIVE_LASER: {
+            case JOYSTICK_DRIVE: {
                 // Get joystick inputs
                 double rot = controller.getLeftTriggerAxis() - controller.getRightTriggerAxis();
                 double speedX = controller.getLeftX();
@@ -68,19 +68,19 @@ public class RobotContainer {
                 
                 
                 // Apply deadzone
-                double deadzone = NetworkHandler.JOYSTICK_DEADZONE.get();
+                double deadzone = NetworkHandlerSubsystem.JOYSTICK_DEADZONE.get();
 
                 double laserAltitudeSpeed = MathUtil.applyDeadband(controller.getRightY(), deadzone);
                 double laserAzimuthSpeed = -MathUtil.applyDeadband(controller.getRightX(), deadzone);
 
-                rot = MathUtil.applyDeadband(rot, NetworkHandler.TRIGGER_AXIS_DEADZONE.get());
+                rot = MathUtil.applyDeadband(rot, NetworkHandlerSubsystem.TRIGGER_AXIS_DEADZONE.get());
                 speedX = MathUtil.applyDeadband(speedX, deadzone);
                 speedY = MathUtil.applyDeadband(speedY, deadzone);
 
                 // Drive the swerve drive
                 swerveDriveSubsystem.processCarteseanInput(new Translation2d(-speedX, -speedY), rot, true, true);
-                laserTurret.setSpeeds(laserAzimuthSpeed, laserAltitudeSpeed);
-                cameraTower.setSpeeds(cameraSpeed);
+                laserTurret.setSpeed(laserAzimuthSpeed, laserAltitudeSpeed);
+                cameraTower.setSpeed(cameraSpeed);
                 break;
             }
             case CENTER_WHEELS: {
@@ -90,11 +90,11 @@ public class RobotContainer {
             }
             case CRAB_WALK: {
                 // Get speed and POV from controller
-                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkHandler.TRIGGER_AXIS_DEADZONE.get());
+                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkHandlerSubsystem.TRIGGER_AXIS_DEADZONE.get());
                 double pov = controller.getPOV();
 
                 // Calculate rotation input
-                double rot = MathUtil.applyDeadband(controller.getRightX(), NetworkHandler.JOYSTICK_DEADZONE.get());
+                double rot = MathUtil.applyDeadband(controller.getRightX(), NetworkHandlerSubsystem.JOYSTICK_DEADZONE.get());
 
                 if (pov % 90 != 0) {
                     pov = -1;

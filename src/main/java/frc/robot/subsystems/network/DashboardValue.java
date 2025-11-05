@@ -1,4 +1,4 @@
-package frc.robot.network;
+package frc.robot.subsystems.network;
 
 import java.util.ArrayList;
 
