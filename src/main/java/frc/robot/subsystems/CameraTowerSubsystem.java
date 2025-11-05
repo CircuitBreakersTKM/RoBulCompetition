@@ -28,7 +28,7 @@ public class CameraTowerSubsystem extends SubsystemBase implements MotorizedSubs
             throw new IllegalArgumentException("CameraTowerSubsystem requires exactly one speed value.");
         }
         double azimuthSpeed = speeds[0];
-        azimuthSpeed *= NetworkHandlerSubsystem.CAMERA_MOTOR_MAX_SPEED.get();
+        azimuthSpeed *= NetworkSubsystem.CAMERA_MOTOR_MAX_SPEED.get();
 
         azimuthMotor.set(azimuthSpeed);
     }

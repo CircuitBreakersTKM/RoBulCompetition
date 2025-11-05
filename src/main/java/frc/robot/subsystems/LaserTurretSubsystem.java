@@ -23,8 +23,8 @@ public class LaserTurretSubsystem extends SubsystemBase implements MotorizedSubs
         double azimuthSpeed = speeds[0];
         double altitudeSpeed = speeds[1];
 
-        azimuthSpeed *= NetworkHandlerSubsystem.LASER_MOTOR_MAX_SPEED.get();
-        altitudeSpeed *= NetworkHandlerSubsystem.LASER_MOTOR_MAX_SPEED.get();
+        azimuthSpeed *= NetworkSubsystem.LASER_MOTOR_MAX_SPEED.get();
+        altitudeSpeed *= NetworkSubsystem.LASER_MOTOR_MAX_SPEED.get();
 
         azimuthMotor.set(azimuthSpeed);
         altitudeMotor.set(altitudeSpeed);

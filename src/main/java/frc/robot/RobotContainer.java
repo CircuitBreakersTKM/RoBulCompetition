@@ -3,9 +3,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.CameraTowerSubsystem;
 import frc.robot.subsystems.LaserTurretSubsystem;
-import frc.robot.subsystems.NetworkHandlerSubsystem;
+import frc.robot.subsystems.NetworkSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
-import frc.robot.subsystems.NetworkHandlerSubsystem.AutoMode;
+import frc.robot.subsystems.NetworkSubsystem.AutoMode;
 import swervelib.SwerveDriveTest;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,7 +19,7 @@ public class RobotContainer {
     private final LaserTurretSubsystem laserTurret = new LaserTurretSubsystem(11, 12);
     private final CameraTowerSubsystem cameraTower = new CameraTowerSubsystem(21);
 
-    private AutoMode lastMode = NetworkHandlerSubsystem.autoModeChooser.getSelected();
+    private AutoMode lastMode = NetworkSubsystem.autoModeChooser.getSelected();
 
     private boolean moving = false;
     
@@ -28,7 +28,7 @@ public class RobotContainer {
             instance.close();
         }
         else {
-            NetworkHandlerSubsystem.Init();
+            NetworkSubsystem.Init();
         }
 
         try {
@@ -45,15 +45,15 @@ public class RobotContainer {
     public void OnLastModeChange(AutoMode lastAutoMode, AutoMode newAutoMode) {
     }
     public void processManualInput() {
-        AutoMode currentMode = NetworkHandlerSubsystem.autoModeChooser.getSelected();
+        AutoMode currentMode = NetworkSubsystem.autoModeChooser.getSelected();
         if (lastMode != currentMode) {
             OnLastModeChange(lastMode, currentMode);
-            lastMode = NetworkHandlerSubsystem.autoModeChooser.getSelected();
+            lastMode = NetworkSubsystem.autoModeChooser.getSelected();
         }
 
-        if (NetworkHandlerSubsystem.ZERO_ANGLE.get()) {
+        if (NetworkSubsystem.ZERO_ANGLE.get()) {
             swerveDriveSubsystem.zeroGyro();
-            NetworkHandlerSubsystem.ZERO_ANGLE.set(false);
+            NetworkSubsystem.ZERO_ANGLE.set(false);
         }
 
         switch (currentMode) {
@@ -68,12 +68,12 @@ public class RobotContainer {
                 
                 
                 // Apply deadzone
-                double deadzone = NetworkHandlerSubsystem.JOYSTICK_DEADZONE.get();
+                double deadzone = NetworkSubsystem.JOYSTICK_DEADZONE.get();
 
                 double laserAltitudeSpeed = MathUtil.applyDeadband(controller.getRightY(), deadzone);
                 double laserAzimuthSpeed = -MathUtil.applyDeadband(controller.getRightX(), deadzone);
 
-                rot = MathUtil.applyDeadband(rot, NetworkHandlerSubsystem.TRIGGER_AXIS_DEADZONE.get());
+                rot = MathUtil.applyDeadband(rot, NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get());
                 speedX = MathUtil.applyDeadband(speedX, deadzone);
                 speedY = MathUtil.applyDeadband(speedY, deadzone);
 
@@ -90,11 +90,11 @@ public class RobotContainer {
             }
             case CRAB_WALK: {
                 // Get speed and POV from controller
-                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkHandlerSubsystem.TRIGGER_AXIS_DEADZONE.get());
+                double speed = MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get());
                 double pov = controller.getPOV();
 
                 // Calculate rotation input
-                double rot = MathUtil.applyDeadband(controller.getRightX(), NetworkHandlerSubsystem.JOYSTICK_DEADZONE.get());
+                double rot = MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
 
                 if (pov % 90 != 0) {
                     pov = -1;

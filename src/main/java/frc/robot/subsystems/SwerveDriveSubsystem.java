@@ -47,21 +47,21 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
         double voltage = pdh.getVoltage();
         double k = (voltage - 11.5) / 0.5;
 
-        NetworkHandlerSubsystem.MAX_SPEED.set(MathHelper.Interpolate(minSpeed, maxSpeed, k));
+        NetworkSubsystem.MAX_SPEED.set(MathHelper.Interpolate(minSpeed, maxSpeed, k));
 
-        speedLimiter = new RateLimiter2D(NetworkHandlerSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
-        rotLimiter = new RateLimiter(NetworkHandlerSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
+        speedLimiter = new RateLimiter2D(NetworkSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
+        rotLimiter = new RateLimiter(NetworkSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
     }
 
     public void processCarteseanInput(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         // Scale inputs and apply max speeds
-        double rot = MathHelper.ScaleRotInput(rotation) * NetworkHandlerSubsystem.MAX_ANGULAR_SPEED.get() * NetworkHandlerSubsystem.TURN_SENSITIVITY.get();
+        double rot = MathHelper.ScaleRotInput(rotation) * NetworkSubsystem.MAX_ANGULAR_SPEED.get() * NetworkSubsystem.TURN_SENSITIVITY.get();
         
         // For translation, we calculate polar coordinates to apply a non-linear scaling without affecting direction
         double magnitude = Math.hypot(translation.getY(), translation.getX());
         double angle = Math.atan2(translation.getX(), translation.getY());
 
-        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkHandlerSubsystem.MAX_SPEED.get();
+        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkSubsystem.MAX_SPEED.get();
         double speedX = magnitude * Math.cos(angle);
         double speedY = magnitude * Math.sin(angle);
 
@@ -74,9 +74,9 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     }
     public void processPolarInput(double magnitude, double angle, double rotation, boolean fieldRelative, boolean isOpenLoop) {
         // Scale inputs and apply max speeds
-        double rot = MathHelper.ScaleRotInput(rotation) * NetworkHandlerSubsystem.MAX_ANGULAR_SPEED.get() * NetworkHandlerSubsystem.TURN_SENSITIVITY.get();
+        double rot = MathHelper.ScaleRotInput(rotation) * NetworkSubsystem.MAX_ANGULAR_SPEED.get() * NetworkSubsystem.TURN_SENSITIVITY.get();
         
-        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkHandlerSubsystem.MAX_SPEED.get();
+        magnitude = MathHelper.ScaleSpeedInput(magnitude) * NetworkSubsystem.MAX_SPEED.get();
 
         double speedX = magnitude * Math.cos(angle);
         double speedY = magnitude * Math.sin(angle);

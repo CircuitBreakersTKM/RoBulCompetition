@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.network.DashboardValue;
 
-public class NetworkHandlerSubsystem {
+public class NetworkSubsystem {
     public static enum AutoMode {
         NONE,
         JOYSTICK_DRIVE,
@@ -43,12 +43,14 @@ public class NetworkHandlerSubsystem {
     public static final DashboardValue<Double> CAMERA_MOTOR_MAX_SPEED = new DashboardValue<>(
         "Camera Tower/Motor speed", 0.25);
 
+    
+
     public static void Init() {
         autoModeChooser.setDefaultOption("Joystick Drive", AutoMode.JOYSTICK_DRIVE);
         autoModeChooser.addOption("None", AutoMode.NONE);
         autoModeChooser.addOption("Crab Walk", AutoMode.CRAB_WALK);
         autoModeChooser.addOption("Center Wheels", AutoMode.CENTER_WHEELS);
-        SmartDashboard.putData("Auto Mode", NetworkHandlerSubsystem.autoModeChooser);
+        SmartDashboard.putData("Auto Mode", NetworkSubsystem.autoModeChooser);
 
         for (DashboardValue<?> value : DashboardValue.values) {
             value.setDefault();
