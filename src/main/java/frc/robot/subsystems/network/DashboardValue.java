@@ -12,21 +12,19 @@ public class DashboardValue<T extends Object> {
 
     public static ArrayList<DashboardValue<? extends Object>> values = new ArrayList<>();
 
-    public DashboardValue(String key, T defaultValue, Class<? extends Object> classType) {
+    public DashboardValue(NetworkTable table, String key, T defaultValue, Class<? extends Object> classType) {
         if (defaultValue == null) throw new IllegalArgumentException("defaultValue cannot be null");
 
         this.key = key;
         this.defaultValue = defaultValue;
         this.type = classType;
-
-        NetworkTable table = NetworkTableInstance.getDefault().getTable("CircuitBreakers");
         this.entry = table.getEntry(key);
 
         values.add(this);
     }
 
     public DashboardValue(String key, T defaultValue) {
-        this(key, defaultValue, defaultValue.getClass());
+        this(NetworkTableInstance.getDefault().getTable("CircuitBreakers"), key, defaultValue, defaultValue.getClass());
     }
 
     @SuppressWarnings("unchecked")
