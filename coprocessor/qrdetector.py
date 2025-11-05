@@ -17,7 +17,7 @@ import time
 # === CONFIGURATION ===
 PHOTONVISION_STREAM_URL = "http://10.0.3.11:1182/stream.mjpg"
 TEAM_NUMBER = 3
-TABLE_NAME = "QRDetector"
+TABLE_NAME = "CircuitBreakers"
 
 # === INITIALIZE NETWORKTABLES ===
 # Use the default FRC team IP scheme: 10.TE.AM.2
@@ -33,9 +33,10 @@ cap = cv2.VideoCapture(PHOTONVISION_STREAM_URL)
 
 print("[INFO] Setting up NetworkTables entries...")
 
-qr_table.putBoolean("hasTarget", False)
-qr_table.putString("data", "initializing")
-qr_table.putNumber("ticker", 0)
+qr_table.putBoolean("Camera Tower/QR Detector/hasTarget", False)
+qr_table.putString("Camera Tower/QR Detector/data", "initializing")
+qr_table.putNumber("Camera Tower/QR Detector/ticker", 0)
+qr_table.putBoolean("Camera Tower/QR Detector/resetTicker", False)
 
 print ("[INFO] Waiting for camera stream to open...")
 
@@ -69,14 +70,14 @@ while True:
         center_x = x + w / 2
         center_y = y + h / 2
 
-        if qr_table.getBoolean("resetTicker", False):
+        if qr_table.getBoolean("Camera Tower/QR Detector/resetTicker", False):
             ticker = 0
-            qr_table.putBoolean("resetTicker", False)
+            qr_table.putBoolean("Camera Tower/QR Detector/resetTicker", False)
         
         # Publish to NetworkTables
-        qr_table.putString("data", qr_data)
-        qr_table.putBoolean("hasTarget", True)
-        qr_table.putNumber("ticker", ticker)
+        qr_table.putString("Camera Tower/QR Detector/data", qr_data)
+        qr_table.putBoolean("Camera Tower/QR Detector/hasTarget", True)
+        qr_table.putNumber("Camera Tower/QR Detector/ticker", ticker)
         ticker += 1
 
         last_detect_time = time.time()
@@ -84,8 +85,8 @@ while True:
     else:
         # If no QR detected for a while, clear entries
         if time.time() - last_detect_time > DETECTION_TIMEOUT:
-            qr_table.putBoolean("hasTarget", False)
-            qr_table.putString("data", "")
+            qr_table.putBoolean("Camera Tower/QR Detector/hasTarget", False)
+            qr_table.putString("Camera Tower/QR Detector/data", "")
 
 cap.release()
 cv2.destroyAllWindows()
