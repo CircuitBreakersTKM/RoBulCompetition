@@ -142,6 +142,6 @@ tasks.register("deployCoprocessor") {
 }
 
 // Hook it into WPILib's deploy
-tasks.named("deploy") {
-    finalizedBy("deployCoprocessor")
-}
+// tasks.named("deploy") {
+//     finalizedBy("deployCoprocessor")
+// }
