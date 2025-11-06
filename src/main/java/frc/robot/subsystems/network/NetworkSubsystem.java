@@ -1,8 +1,7 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.network;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.subsystems.network.DashboardValue;
 
 public class NetworkSubsystem {
     public static enum AutoMode {

@@ -4,6 +4,7 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.MotorizedSubsystem;
+import frc.robot.subsystems.network.NetworkSubsystem;
 
 public class CameraTowerSubsystem extends SubsystemBase implements MotorizedSubsystem {
     public final SparkMax azimuthMotor;

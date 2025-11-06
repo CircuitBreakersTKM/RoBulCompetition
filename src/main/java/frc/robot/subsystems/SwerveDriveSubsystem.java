@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -11,6 +12,7 @@ import frc.robot.interfaces.MotorizedSubsystem;
 import frc.robot.math.MathHelper;
 import frc.robot.math.RateLimiter;
 import frc.robot.math.RateLimiter2D;
+import frc.robot.subsystems.network.NetworkSubsystem;
 import swervelib.SwerveDrive;
 import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
@@ -96,10 +98,7 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     }
     @Override
     public void stop() {
-        for (SwerveModule module : modules) {
-            module.getDriveMotor().set(0);
-            module.getAngleMotor().set(0);
-        }
+        swerveDrive.drive(new ChassisSpeeds(0, 0, 0));
     }
     @Override
     public void stopIf(boolean required) {
