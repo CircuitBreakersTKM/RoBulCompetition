@@ -104,6 +104,7 @@ public class RobotContainer {
             case CRAB_WALK:
                 crabDriveCommand.schedule();
                 cameraTurnCommand.schedule();
+                break;
             case CENTER_WHEELS:
                 centerWheels.schedule();
                 break;
