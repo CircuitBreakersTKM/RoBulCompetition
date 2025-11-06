@@ -65,7 +65,7 @@ public class RobotContainer {
         );
         crabDriveCommand = new CrabDriveCommand(swerveDriveSubsystem, 
             () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
-            () -> - controller.getPOV() * 2 * Math.PI / 360, 
+            () -> - controller.getPOV(), 
             () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()), 
         false);
         centerWheels = Commands.run(

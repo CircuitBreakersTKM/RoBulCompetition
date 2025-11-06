@@ -14,7 +14,6 @@ import frc.robot.math.RateLimiter;
 import frc.robot.math.RateLimiter2D;
 import frc.robot.subsystems.network.NetworkSubsystem;
 import swervelib.SwerveDrive;
-import swervelib.SwerveModule;
 import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
@@ -29,8 +28,6 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     
     private RateLimiter2D speedLimiter;
     private RateLimiter rotLimiter;
-
-    private final SwerveModule[] modules;
     
     public SwerveDriveSubsystem() throws IOException {
         // Specify the directory containing your JSON configuration files
@@ -38,11 +35,11 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     
         swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(4.8);
         swerveDrive.useInternalFeedbackSensor();
+
         // swerveDrive.setHeadingCorrection(false);
         // swerveDrive.setCosineCompensator(false);
-        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
 
-        modules = swerveDrive.getModules();
+        SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     }
 
     public void applyLowBatteryLimiters() {

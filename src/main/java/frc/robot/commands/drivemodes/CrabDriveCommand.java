@@ -36,26 +36,26 @@ public class CrabDriveCommand extends TrackedCommand {
         double rotation = rotSupplier.getAsDouble();
 
         if (Math.abs(angle) == 1) {
-            swerveDriveSubsystem.stop();
+            swerveDriveSubsystem.processPolarInput(0, 0, rotation, false, false);
             return; // Ignore when using POV and not pressed
         }
 
-        if (angle > 4*Math.PI) {
-            angle = Rotation2d.fromDegrees(angle).getRadians(); // Convert from degrees to radians if needed
-        }
+        angle = angle % 360;
 
         if (allowOnlyCardinalDirections) {
             if (angle % 90 == 0) // Ignore when using POV and pressed between directions
             {
-                swerveDriveSubsystem.stop();
+                swerveDriveSubsystem.processPolarInput(0, 0, rotation, false, false);
                 return;
             }
 
-            angle = Math.round(rotation / (Math.PI / 2)) * (Math.PI / 2);
+            angle = Math.round(rotation / 90.0) * 90.0;
         }
 
+        angle = Math.toRadians(angle);
+
         // Drive the swerve drive
-        swerveDriveSubsystem.processPolarInput(speed, angle, rotation, false, true);
+        swerveDriveSubsystem.processPolarInput(speed, angle, rotation, false, false);
     }
 
     @Override
