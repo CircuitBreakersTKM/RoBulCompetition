@@ -19,6 +19,19 @@ PHOTONVISION_STREAM_URL = "http://10.0.3.11:1182/stream.mjpg"
 TEAM_NUMBER = 3
 TABLE_NAME = "CircuitBreakers"
 PREFIX = "Camera Tower/QR Detector/"
+QR_SIZE_CENTIMETERS = 16.6 # Physical size of the QR codes side in centimeters
+
+# CAMERA_FOCAL_LENGTH_PIXELS: The focal length in pixel units for distance estimation.
+# This combines the physical lens focal length with the sensor's pixel density.
+# 
+# CALIBRATION METHOD:
+# 1. Place a QR code at a known distance (e.g., 100 cm) from the camera
+# 2. Run this script and note the pixel width (w) of the detected QR code
+# 3. Calculate: CAMERA_FOCAL_LENGTH_PIXELS = (pixel_width × distance_cm) / QR_SIZE_CENTIMETERS
+#    Example: If w=166 pixels at 100cm distance: (166 × 100) / 16.6 = 1000 pixels
+# 4. Update the value below and restart the script
+# 5. Verify accuracy by testing at multiple known distances
+CAMERA_FOCAL_LENGTH_PIXELS = 1000  # Default estimate - calibrate for your specific camera
 
 # === INITIALIZE NETWORKTABLES ===
 # Use the default FRC team IP scheme: 10.TE.AM.2
@@ -38,6 +51,8 @@ qr_table.putBoolean(PREFIX + "hasTarget", False)
 qr_table.putString(PREFIX + "data", "initializing")
 qr_table.putNumber(PREFIX + "ticker", 0)
 qr_table.putBoolean(PREFIX + "resetTicker", False)
+qr_table.putNumber(PREFIX + "distance", 0.0)
+qr_table.putNumber(PREFIX + "width", 0.0)
 
 print ("[INFO] Waiting for camera stream to open...")
 
@@ -75,19 +90,28 @@ while True:
             ticker = 0
             qr_table.putBoolean(PREFIX + "resetTicker", False)
         
+        # Calculate distance using similar triangles
+        # Distance = (RealSize * FocalLength) / PixelSize
+        qr_pixel_width = w
+        distance_cm = (QR_SIZE_CENTIMETERS * CAMERA_FOCAL_LENGTH_PIXELS) / qr_pixel_width
+        
         # Publish to NetworkTables
         qr_table.putString(PREFIX + "data", qr_data)
         qr_table.putBoolean(PREFIX + "hasTarget", True)
         qr_table.putNumber(PREFIX + "ticker", ticker)
+        qr_table.putNumber(PREFIX + "distance", distance_cm)
+        qr_table.putNumber(PREFIX + "width", w)
         ticker += 1
 
         last_detect_time = time.time()
-        print(f"[QR] {qr_data} (area={area:.0f})")
+        # print(f"[QR] {qr_data} (area={area:.0f}, distance={distance_cm:.1f}cm)")
     else:
         # If no QR detected for a while, clear entries
         if time.time() - last_detect_time > DETECTION_TIMEOUT:
             qr_table.putBoolean(PREFIX + "hasTarget", False)
             qr_table.putString(PREFIX + "data", "")
+            qr_table.putNumber(PREFIX + "distance", 0.0)
+            qr_table.putNumber(PREFIX + "width", 0.0)
 
 cap.release()
 cv2.destroyAllWindows()
