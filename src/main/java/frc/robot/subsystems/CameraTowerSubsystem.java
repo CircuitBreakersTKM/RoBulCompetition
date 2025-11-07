@@ -34,6 +34,10 @@ public class CameraTowerSubsystem extends SubsystemBase implements MotorizedSubs
         azimuthMotor.set(azimuthSpeed);
     }
 
+    public void zeroEncoder() {
+        azimuthMotor.getEncoder().setPosition(0);
+    }
+    
     @Override
     public void stopIf(boolean condition) {
         if (condition) {

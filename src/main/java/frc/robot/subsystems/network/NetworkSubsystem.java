@@ -8,7 +8,8 @@ public class NetworkSubsystem {
         NONE,
         JOYSTICK_DRIVE,
         CENTER_WHEELS,
-        CRAB_WALK
+        CRAB_WALK,
+        CAMERA_TOWER_TEST
     }
 
     public static final SendableChooser<AutoMode> autoModeChooser = new SendableChooser<>();
@@ -49,6 +50,7 @@ public class NetworkSubsystem {
         autoModeChooser.addOption("None", AutoMode.NONE);
         autoModeChooser.addOption("Crab Walk", AutoMode.CRAB_WALK);
         autoModeChooser.addOption("Center Wheels", AutoMode.CENTER_WHEELS);
+        autoModeChooser.addOption("Camera Tower Test", AutoMode.CAMERA_TOWER_TEST);
         SmartDashboard.putData("Auto Mode", NetworkSubsystem.autoModeChooser);
 
         for (DashboardValue<?> value : DashboardValue.values) {

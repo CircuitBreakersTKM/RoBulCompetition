@@ -1,4 +1,4 @@
-package frc.robot.commands.drivemodes;
+package frc.robot.commands.drive_modes;
 
 import java.util.function.DoubleSupplier;
 

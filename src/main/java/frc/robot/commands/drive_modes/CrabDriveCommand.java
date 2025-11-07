@@ -1,8 +1,7 @@
-package frc.robot.commands.drivemodes;
+package frc.robot.commands.drive_modes;
 
 import java.util.function.DoubleSupplier;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 
