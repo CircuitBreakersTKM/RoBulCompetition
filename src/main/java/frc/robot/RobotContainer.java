@@ -72,7 +72,7 @@ public class RobotContainer {
             () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
             () -> - controller.getPOV(), 
             () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()), 
-        false);
+        true);
         centerWheels = Commands.run(
             () -> {
                 SwerveDriveTest.centerModules(swerve.swerveDrive);
@@ -89,7 +89,10 @@ public class RobotContainer {
         });
     }
     public void teleopInit() {
-        swerve.applyLowBatteryLimiters();
+        if (!NetworkSubsystem.OVERRIDE_LOW_VOLTAGE_LIMIERS.get()) {
+            swerve.applyLowBatteryLimiters();
+        }
+        
         cameraTower.zeroEncoder();
 
         if (!zeroGyroCommand.isScheduled()) {

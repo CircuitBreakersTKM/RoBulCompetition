@@ -24,16 +24,20 @@ public class NetworkSubsystem {
 
         
     // CHASSIS parameters
+    public static final DashboardValue<Boolean> ZERO_ANGLE = new DashboardValue<>(
+        "Chassis/Zero angle", false);
     public static final DashboardValue<Double> MAX_SPEED = new DashboardValue<>(
         "Chassis/Max speed (ms^-1)", 2.5);
     public static final DashboardValue<Double> MAX_ANGULAR_SPEED = new DashboardValue<>(
         "Chassis/Max angular speed (rads^-1)", 1.8);
+    public static final DashboardValue<Boolean> OVERRIDE_LOW_VOLTAGE_LIMIERS = new DashboardValue<>(
+        "Chassis/Advanced/Override low voltage limiters", false);
+
+    //CHASSIS/ADVANCED parameters
     public static final DashboardValue<Double> MAX_ACCELERATION = new DashboardValue<>(
-        "Chassis/Max acceleration (ms^-2)", 3.0);
+        "Chassis/Advanced/Max acceleration (ms^-2)", 3.0);
     public static final DashboardValue<Double> MAX_ANGULAR_ACCELERATION = new DashboardValue<>(
-        "Chassis/Max angular acceleration (rads^-2)", 2*Math.PI);
-    public static final DashboardValue<Boolean> ZERO_ANGLE = new DashboardValue<>(
-        "Chassis/Zero angle", false);
+        "Chassis/Advanced/Max angular acceleration (rads^-2)", 2*Math.PI);
 
     // LASER TURRET parameters
     public static final DashboardValue<Double> LASER_MOTOR_MAX_SPEED = new DashboardValue<>(

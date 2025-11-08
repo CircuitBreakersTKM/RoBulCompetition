@@ -26,8 +26,8 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
 
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
     
-    private RateLimiter2D speedLimiter;
-    private RateLimiter rotLimiter;
+    private RateLimiter2D speedLimiter = new RateLimiter2D(NetworkSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
+    private RateLimiter rotLimiter = new RateLimiter(NetworkSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
     
     public SwerveDriveSubsystem() throws IOException {
         // Specify the directory containing your JSON configuration files
@@ -47,9 +47,6 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
         double k = (voltage - 11.5) / 0.5;
 
         NetworkSubsystem.MAX_SPEED.set(MathHelper.Interpolate(minSpeed, maxSpeed, k));
-
-        speedLimiter = new RateLimiter2D(NetworkSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
-        rotLimiter = new RateLimiter(NetworkSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
     }
 
     public void processCarteseanInput(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
