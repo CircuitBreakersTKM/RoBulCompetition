@@ -15,6 +15,11 @@ import swervelib.SwerveDriveTest;
 
 import edu.wpi.first.math.MathUtil;
 
+/**
+ * Container class that holds all subsystems, commands, and controller mappings.
+ * Implements singleton pattern to ensure only one instance exists.
+ * Manages auto mode switching and controller input processing.
+ */
 public class RobotContainer {
     private static RobotContainer instance = null;
 
@@ -36,6 +41,10 @@ public class RobotContainer {
 
     private AutoMode lastMode = AutoMode.NONE;
     
+    /**
+     * Private constructor initializes all subsystems and commands.
+     * Sets up controller bindings and command suppliers with deadband applied.
+     */
     public RobotContainer() {
         if (instance != null) {
             instance.close();
@@ -88,6 +97,11 @@ public class RobotContainer {
             }
         });
     }
+    
+    /**
+     * Called when teleop mode begins.
+     * Applies low battery limiters, resets camera encoder, and schedules gyro zero command.
+     */
     public void teleopInit() {
         if (!NetworkSubsystem.OVERRIDE_LOW_VOLTAGE_LIMIERS.get()) {
             swerve.applyLowBatteryLimiters();
@@ -99,6 +113,14 @@ public class RobotContainer {
             zeroGyroCommand.schedule();
         }
     }
+    
+    /**
+     * Handles auto mode transitions by canceling all active commands
+     * and scheduling commands appropriate for the new mode.
+     * 
+     * @param lastAutoMode The previous auto mode
+     * @param newAutoMode The new auto mode to activate
+     */
     public void OnLastModeChange(AutoMode lastAutoMode, AutoMode newAutoMode) {
         // Cancel all active commands
         TrackedCommand.cancelAll();
@@ -124,6 +146,11 @@ public class RobotContainer {
                 break;
         }
     }
+    
+    /**
+     * Called periodically during teleop.
+     * Monitors auto mode selection and triggers mode change handler when mode changes.
+     */
     public void processManualInput() {
         AutoMode currentMode = NetworkSubsystem.autoModeChooser.getSelected();
 
@@ -180,8 +207,17 @@ public class RobotContainer {
         // }
     }
 
+    /**
+     * Cleanup method called when replacing a RobotContainer instance.
+     */
     public void close() {
     }
+    
+    /**
+     * Gets the singleton instance of RobotContainer, creating it if it doesn't exist.
+     * 
+     * @return The RobotContainer singleton instance
+     */
     public static RobotContainer getInstance() {
         if (instance == null) {
             instance = new RobotContainer();

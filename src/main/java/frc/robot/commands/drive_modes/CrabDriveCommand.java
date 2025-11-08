@@ -5,6 +5,11 @@ import java.util.function.DoubleSupplier;
 import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 
+/**
+ * Drive command that moves the robot in a specific direction without changing orientation.
+ * Uses polar input (speed and angle) with optional rotation for "crab walk" motion.
+ * Can be configured to only allow cardinal directions (0°, 90°, 180°, 270°).
+ */
 public class CrabDriveCommand extends TrackedCommand {
     private final SwerveDriveSubsystem swerveDriveSubsystem;
     private final DoubleSupplier speedSupplier;
@@ -12,6 +17,15 @@ public class CrabDriveCommand extends TrackedCommand {
     private final DoubleSupplier rotSupplier;
     private boolean allowOnlyCardinalDirections;
 
+    /**
+     * Creates a new CrabDriveCommand.
+     * 
+     * @param swerveDriveSubsystem The swerve drive subsystem
+     * @param speedSupplier Supplier for drive speed magnitude (0.0 to 1.0)
+     * @param angleSupplier Supplier for drive direction angle in degrees (typically from POV)
+     * @param rotSupplier Supplier for rotation speed while crab walking
+     * @param allowOnlyCardinalDirections If true, only 0°, 90°, 180°, 270° directions are allowed
+     */
     public CrabDriveCommand(SwerveDriveSubsystem swerveDriveSubsystem,
                                 DoubleSupplier speedSupplier,
                                 DoubleSupplier angleSupplier,

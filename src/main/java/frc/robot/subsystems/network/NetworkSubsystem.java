@@ -3,7 +3,15 @@ package frc.robot.subsystems.network;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+/**
+ * Manages NetworkTables dashboard values and auto mode selection.
+ * Centralizes all tunable parameters for easy access and modification
+ * through the driver station dashboard without redeploying code.
+ */
 public class NetworkSubsystem {
+    /**
+     * Available autonomous/teleop operating modes.
+     */
     public static enum AutoMode {
         NONE,
         JOYSTICK_DRIVE,
@@ -12,9 +20,10 @@ public class NetworkSubsystem {
         CAMERA_TOWER_TEST
     }
 
+    /** SendableChooser for auto mode selection on dashboard */
     public static final SendableChooser<AutoMode> autoModeChooser = new SendableChooser<>();
 
-    // CONTROLLER parameters
+    // Controller parameters
     public static final DashboardValue<Double> TURN_SENSITIVITY = new DashboardValue<>(
         "Controller/Turn sensitivity", 0.7);
     public static final DashboardValue<Double> JOYSTICK_DEADZONE = new DashboardValue<>(
@@ -23,7 +32,7 @@ public class NetworkSubsystem {
         "Controller/Trigger axis deadzone", 0.05);
 
         
-    // CHASSIS parameters
+    // Chassis parameters
     public static final DashboardValue<Boolean> ZERO_ANGLE = new DashboardValue<>(
         "Chassis/Zero angle", false);
     public static final DashboardValue<Double> MAX_SPEED = new DashboardValue<>(
@@ -33,22 +42,25 @@ public class NetworkSubsystem {
     public static final DashboardValue<Boolean> OVERRIDE_LOW_VOLTAGE_LIMIERS = new DashboardValue<>(
         "Chassis/Advanced/Override low voltage limiters", false);
 
-    //CHASSIS/ADVANCED parameters
+    // Chassis advanced parameters
     public static final DashboardValue<Double> MAX_ACCELERATION = new DashboardValue<>(
         "Chassis/Advanced/Max acceleration (ms^-2)", 3.0);
     public static final DashboardValue<Double> MAX_ANGULAR_ACCELERATION = new DashboardValue<>(
         "Chassis/Advanced/Max angular acceleration (rads^-2)", 2*Math.PI);
 
-    // LASER TURRET parameters
+    // Laser turret parameters
     public static final DashboardValue<Double> LASER_MOTOR_MAX_SPEED = new DashboardValue<>(
         "Laser Turret/Motor speed", 0.25);
 
-    // CAMERA TOWER parameters
+    // Camera tower parameters
     public static final DashboardValue<Double> CAMERA_MOTOR_MAX_SPEED = new DashboardValue<>(
         "Camera Tower/Motor speed", 0.25);
 
-    
-
+    /**
+     * Initializes the NetworkSubsystem by setting up the auto mode chooser
+     * and pushing all default values to NetworkTables.
+     * Must be called once during robot initialization.
+     */
     public static void Init() {
         autoModeChooser.setDefaultOption("Joystick Drive", AutoMode.JOYSTICK_DRIVE);
         autoModeChooser.addOption("None", AutoMode.NONE);

@@ -1,5 +1,10 @@
 package frc.robot.math;
 
+/**
+ * One-dimensional rate limiter that restricts how quickly a value can change.
+ * Supports separate acceleration and deceleration limits with deadband filtering.
+ * Uses wall-clock time for accurate rate limiting independent of update frequency.
+ */
 public class RateLimiter {
     private final double accelerationLimit;   // m/s^2, how fast we can accelerate
     private final double decelerationLimit;   // m/s^2, how fast we can decelerate
@@ -9,9 +14,11 @@ public class RateLimiter {
     private long lastTime; // nanoseconds
 
     /**
-     * @param accelerationLimit max rate when moving away from 0
-     * @param decelerationLimit max rate when moving toward 0
-     * @param initialValue starting value
+     * Creates a new RateLimiter with separate acceleration and deceleration limits.
+     * 
+     * @param accelerationLimit Maximum rate of change when moving away from 0 (units/s²)
+     * @param decelerationLimit Maximum rate of change when moving toward 0 (units/s²)
+     * @param ignoreIfWithin Deadband threshold - changes smaller than this are applied immediately
      */
     public RateLimiter(double accelerationLimit, double decelerationLimit, double ignoreIfWithin) {
         this.accelerationLimit = accelerationLimit;
@@ -21,6 +28,13 @@ public class RateLimiter {
         this.lastTime = System.nanoTime();
     }
 
+    /**
+     * Calculates the rate-limited output value based on current input.
+     * Automatically determines whether to apply acceleration or deceleration limit.
+     * 
+     * @param input The desired target value
+     * @return The rate-limited value
+     */
     public double calculate(double input) {
         long now = System.nanoTime();
         double dt = (now - lastTime) / 1e9; // seconds since last update
@@ -46,6 +60,12 @@ public class RateLimiter {
         return lastValue;
     }
 
+    /**
+     * Resets the rate limiter to a specific value.
+     * Also resets the internal timer to current time.
+     * 
+     * @param value The new starting value
+     */
     public void reset(double value) {
         lastValue = value;
         lastTime = System.nanoTime();

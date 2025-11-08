@@ -4,6 +4,13 @@ import java.util.ArrayList;
 
 import edu.wpi.first.networktables.*;
 
+/**
+ * Generic wrapper for NetworkTables values that provides type-safe access
+ * and automatic default value management. Maintains a static list of all
+ * dashboard values for bulk initialization.
+ * 
+ * @param <T> The type of value stored (Boolean, Double, String, etc.)
+ */
 public class DashboardValue<T extends Object> {
     private final String key;
     private final T defaultValue;
@@ -12,6 +19,14 @@ public class DashboardValue<T extends Object> {
 
     public static ArrayList<DashboardValue<? extends Object>> values = new ArrayList<>();
 
+    /**
+     * Creates a new DashboardValue with a specific NetworkTable.
+     * 
+     * @param table The NetworkTable to publish to
+     * @param key The key/name of the entry
+     * @param defaultValue The default value (also determines type)
+     * @param classType The class type for type checking
+     */
     public DashboardValue(NetworkTable table, String key, T defaultValue, Class<? extends Object> classType) {
         if (defaultValue == null) throw new IllegalArgumentException("defaultValue cannot be null");
 
@@ -23,10 +38,21 @@ public class DashboardValue<T extends Object> {
         values.add(this);
     }
 
+    /**
+     * Creates a new DashboardValue on the default "CircuitBreakers" NetworkTable.
+     * 
+     * @param key The key/name of the entry
+     * @param defaultValue The default value (also determines type)
+     */
     public DashboardValue(String key, T defaultValue) {
         this(NetworkTableInstance.getDefault().getTable("CircuitBreakers"), key, defaultValue, defaultValue.getClass());
     }
 
+    /**
+     * Gets the current value from NetworkTables, or default if not set.
+     * 
+     * @return The current value
+     */
     @SuppressWarnings("unchecked")
     public T get() {
         return switch (type.getSimpleName()) {
@@ -49,6 +75,11 @@ public class DashboardValue<T extends Object> {
         };
     }
 
+    /**
+     * Sets a new value to NetworkTables.
+     * 
+     * @param value The new value to set
+     */
     public void set(T value) {
         switch (type.getSimpleName()) {
             case "Boolean" -> entry.setBoolean((Boolean) value);
@@ -70,8 +101,22 @@ public class DashboardValue<T extends Object> {
         }
     }
 
+    /**
+     * Resets the value to its default.
+     */
     public void setDefault() { set(defaultValue); }
 
+    /**
+     * Gets the key name of this dashboard value.
+     * 
+     * @return The key string
+     */
     public String key() { return key; }
+    
+    /**
+     * Gets the default value.
+     * 
+     * @return The default value
+     */
     public T defaultValue() { return defaultValue; }
 }

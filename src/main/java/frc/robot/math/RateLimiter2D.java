@@ -2,6 +2,12 @@ package frc.robot.math;
 
 import edu.wpi.first.math.geometry.Translation2d;
 
+/**
+ * Two-dimensional rate limiter for velocity control of swerve drive.
+ * Separately limits tangential (speed) and normal (direction) components of velocity change.
+ * This allows faster acceleration in a straight line while limiting direction changes
+ * that could cause wheel slip or tipping.
+ */
 public class RateLimiter2D {
     private final double accelerationLimit;   // m/s^2, how fast we can accelerate
     private final double decelerationLimit;   // m/s^2, how fast we can decelerate
@@ -13,10 +19,10 @@ public class RateLimiter2D {
 
     /**
      * Constructs a RateLimiter2D.
-     * * @param accelerationLimit The maximum allowed rate of speed increase (m/s^2).
-     * @param decelerationLimit The maximum allowed rate of speed decrease (m/s^2), and also
-     * the limit for directional changes (turning).
-     * @param ignoreIfWithin Ignores a desired change if the magnitude is less than this value.
+     * 
+     * @param accelerationLimit The maximum allowed rate of speed increase (m/s²).
+     * @param decelerationLimit The maximum allowed rate of speed decrease and directional change (m/s²).
+     * @param ignoreIfWithin Ignores changes smaller than this threshold (m/s).
      */
     public RateLimiter2D(double accelerationLimit, double decelerationLimit, double ignoreIfWithin) {
         this.accelerationLimit = accelerationLimit;
@@ -27,7 +33,10 @@ public class RateLimiter2D {
 
     /**
      * Calculates the rate-limited velocity based on the desired velocity and elapsed time.
-     * * @param desiredVelocity The target velocity vector.
+     * Decomposes velocity changes into tangential (speed) and normal (direction) components,
+     * applying appropriate limits to each.
+     * 
+     * @param desiredVelocity The target velocity vector.
      * @return The calculated rate-limited velocity vector.
      */
     public Translation2d calculate(Translation2d desiredVelocity) {
@@ -114,7 +123,9 @@ public class RateLimiter2D {
 
     /**
      * Resets the rate limiter to a new starting velocity.
-     * * @param velocity The new starting velocity.
+     * Also resets the internal timer to current time.
+     * 
+     * @param velocity The new starting velocity.
      */
     public void reset(Translation2d velocity) {
         lastVelocity = velocity;

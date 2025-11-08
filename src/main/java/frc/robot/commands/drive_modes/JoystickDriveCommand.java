@@ -6,6 +6,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 
+/**
+ * Standard joystick drive command for swerve drive.
+ * Provides field-relative control with independent translation and rotation.
+ * Uses rate limiting and non-linear input scaling for smooth control.
+ */
 public class JoystickDriveCommand extends TrackedCommand {
     private final SwerveDriveSubsystem swerveDriveSubsystem;
     private final DoubleSupplier speedXSupplier;
@@ -16,11 +21,11 @@ public class JoystickDriveCommand extends TrackedCommand {
      * Creates a new JoystickDriveCommand.
      *
      * @param subsystem The swerve drive subsystem this command will control.
-     * @param speedXSupplier A DoubleSupplier that provides the desired speed in the X direction.
-     * @param speedYSupplier A DoubleSupplier that provides the desired speed in the Y direction.
+     * @param speedXSupplier A DoubleSupplier that provides the desired speed in the X direction (strafe).
+     * @param speedYSupplier A DoubleSupplier that provides the desired speed in the Y direction (forward/back).
      * @param rotSupplier A DoubleSupplier that provides the desired rotational speed.
      */
-    public JoystickDriveCommand(SwerveDriveSubsystem subsystem, DoubleSupplier speedXSupplier, 
+    public JoystickDriveCommand(SwerveDriveSubsystem subsystem, DoubleSupplier speedXSupplier,
                                 DoubleSupplier speedYSupplier, DoubleSupplier rotSupplier) {
         this.swerveDriveSubsystem = subsystem;
         this.speedXSupplier = speedXSupplier;
