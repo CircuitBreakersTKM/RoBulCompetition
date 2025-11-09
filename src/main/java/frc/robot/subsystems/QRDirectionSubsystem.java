@@ -229,7 +229,7 @@ public class QRDirectionSubsystem extends SubsystemBase {
         double angleRad = Math.toRadians(cameraAngleDegrees);
         
         // QR position in robot frame
-        double qrX = CAMERA_OFFSET_X_CM + (0 * Math.cos(angleRad) - cameraToQR * Math.sin(angleRad));
+        // double qrX = CAMERA_OFFSET_X_CM + (0 * Math.cos(angleRad) - cameraToQR * Math.sin(angleRad));
         double qrY = CAMERA_OFFSET_Y_CM + (0 * Math.sin(angleRad) + cameraToQR * Math.cos(angleRad));
         
         // Distance from front edge of robot to QR
