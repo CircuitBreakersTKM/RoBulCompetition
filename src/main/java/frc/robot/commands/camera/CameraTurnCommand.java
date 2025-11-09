@@ -1,7 +1,8 @@
-package frc.robot.commands;
+package frc.robot.commands.camera;
 
 import java.util.function.DoubleSupplier;
 
+import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.CameraTowerSubsystem;
 
 /**

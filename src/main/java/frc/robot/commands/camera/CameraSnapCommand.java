@@ -1,7 +1,8 @@
-package frc.robot.commands;
+package frc.robot.commands.camera;
 
 import java.util.function.DoubleSupplier;
 
+import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.CameraTowerSubsystem;
 
 /**
@@ -15,7 +16,6 @@ public class CameraSnapCommand extends TrackedCommand {
     private double cameraTargetAngle;
     private boolean hasTarget;
     
-    private static final double CAMERA_GEAR_RATIO = 100.0; // 100 motor rotations = 1 camera rotation
     private static final double ALLOWED_ERROR = 2.0; // degrees
     private static final double MAX_SPEED = 1.0;
     private static final double MIN_SPEED = 0.05; // Minimum speed to prevent stalling
@@ -45,7 +45,7 @@ public class CameraSnapCommand extends TrackedCommand {
     
     @Override
     public void execute() {
-        double povInput = angleSupplier.getAsDouble();
+        double povInput = -angleSupplier.getAsDouble();
         
         // If POV pressed, update target angle
         if (povInput != 1) {
@@ -62,7 +62,7 @@ public class CameraSnapCommand extends TrackedCommand {
         }
         
         // Get current camera angle in degrees
-        double currentPosition = cameraTower.azimuthMotor.getEncoder().getPosition() / CAMERA_GEAR_RATIO * 360;
+        double currentPosition = cameraTower.getEncoderPosition();
         
         // Scale positions so current is always at 180° to find shortest path
         double scaledCurrent = 180;
@@ -113,7 +113,7 @@ public class CameraSnapCommand extends TrackedCommand {
     public boolean isAtTarget() {
         if (!hasTarget) return true;
         
-        double currentPosition = cameraTower.azimuthMotor.getEncoder().getPosition() / CAMERA_GEAR_RATIO * 360;
+        double currentPosition = cameraTower.getEncoderPosition();
         double scaledCurrent = 180;
         double scaledDesired = cameraTargetAngle - currentPosition + 180;
         scaledDesired = scaledDesired % 360;

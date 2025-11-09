@@ -12,7 +12,10 @@ import frc.robot.subsystems.network.NetworkSubsystem;
  * Speed is configurable via NetworkTables dashboard.
  */
 public class CameraTowerSubsystem extends SubsystemBase implements MotorizedSubsystem {
-    public final SparkMax azimuthMotor;
+    private final SparkMax azimuthMotor;
+    private final boolean inverted = false;
+    
+    private static final double CAMERA_GEAR_RATIO = 100.0; // 100 motor rotations = 1 camera rotation
 
     /**
      * Creates a new CameraTowerSubsystem.
@@ -21,6 +24,7 @@ public class CameraTowerSubsystem extends SubsystemBase implements MotorizedSubs
      */
     public CameraTowerSubsystem(int azimuthMotorCANID) {
         azimuthMotor = new SparkMax(azimuthMotorCANID, SparkMax.MotorType.kBrushless);
+        azimuthMotor.getEncoder().setPosition(0);
     }
 
     @Override
@@ -33,12 +37,22 @@ public class CameraTowerSubsystem extends SubsystemBase implements MotorizedSubs
         azimuthMotor.stopMotor();
     }
 
+    public double getEncoderPosition() {
+        return azimuthMotor.getEncoder().getPosition() / CAMERA_GEAR_RATIO * 360;
+    }
+
     @Override
     public void setSpeed(double... speeds) {
         if (speeds.length != 1) {
             throw new IllegalArgumentException("CameraTowerSubsystem requires exactly one speed value.");
         }
+
         double azimuthSpeed = speeds[0];
+
+        if (inverted) {
+            azimuthSpeed = -azimuthSpeed;
+        }
+
         azimuthSpeed *= NetworkSubsystem.CAMERA_MOTOR_MAX_SPEED.get();
 
         azimuthMotor.set(azimuthSpeed);

@@ -3,10 +3,15 @@ package frc.robot;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.CameraTowerSubsystem;
 import frc.robot.subsystems.LaserTurretSubsystem;
+import frc.robot.subsystems.QRDirectionSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 import frc.robot.subsystems.network.NetworkSubsystem;
-import frc.robot.subsystems.network.NetworkSubsystem.AutoMode;
+import frc.robot.subsystems.network.NetworkSubsystem.TeleopMode;
 import frc.robot.commands.*;
+import frc.robot.commands.auto_routines.MazeAutoCommand;
+import frc.robot.commands.camera.CameraScanCommand;
+import frc.robot.commands.camera.CameraSnapCommand;
+import frc.robot.commands.camera.CameraTurnCommand;
 import frc.robot.commands.drive_modes.CrabDriveCommand;
 import frc.robot.commands.drive_modes.JoystickDriveCommand;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,18 +33,21 @@ public class RobotContainer {
     private final SwerveDriveSubsystem swerve;
     private final LaserTurretSubsystem laserTurret = new LaserTurretSubsystem(11, 12);
     private final CameraTowerSubsystem cameraTower = new CameraTowerSubsystem(21);
+    private final QRDirectionSubsystem qrDirectionSubsystem = new QRDirectionSubsystem();
 
     private final Command joystickDriveCommand;
     private final Command crabDriveCommand;
     private final Command centerWheels;
 
     private final Command cameraTurnCommand;
-    private final Command cameraSnapCommand;
+    private final Command cameraScanCommand;
     private final Command laserMoveCommand;
+
+    private final Command mazeAutoCommand;
 
     private final Command zeroGyroCommand;
 
-    private AutoMode lastMode = AutoMode.NONE;
+    private TeleopMode lastMode = TeleopMode.NONE;
     
     /**
      * Private constructor initializes all subsystems and commands.
@@ -62,11 +70,11 @@ public class RobotContainer {
         instance = this;
 
         cameraTurnCommand = new CameraTurnCommand(cameraTower, 
-            () -> controller.getLeftBumperButton() ? 1.0 : controller.getRightBumperButton() ? -1.0 : 0.0
+            () -> controller.getLeftBumperButton() ? -1.0 : controller.getRightBumperButton() ? 1.0 : 0.0
         );
-        cameraSnapCommand = new CameraSnapCommand(cameraTower, 
-            () -> - controller.getPOV()
-        );
+        cameraScanCommand = new CameraScanCommand(cameraTower,
+            () -> controller.getPOV(), 
+        15);
         laserMoveCommand = new LaserMoveCommand(laserTurret, 
             () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
             () -> MathUtil.applyDeadband(controller.getRightY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
@@ -81,12 +89,19 @@ public class RobotContainer {
             () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
             () -> - controller.getPOV(), 
             () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()), 
-        true);
+        false);
         centerWheels = Commands.run(
             () -> {
                 SwerveDriveTest.centerModules(swerve.swerveDrive);
             },
         swerve);
+
+        mazeAutoCommand = new MazeAutoCommand(
+            swerve,
+            cameraTower,
+            qrDirectionSubsystem,
+            0.5
+        );
         
         zeroGyroCommand = Commands.run(
         () -> {
@@ -121,7 +136,7 @@ public class RobotContainer {
      * @param lastAutoMode The previous auto mode
      * @param newAutoMode The new auto mode to activate
      */
-    public void OnLastModeChange(AutoMode lastAutoMode, AutoMode newAutoMode) {
+    public void OnLastModeChange(TeleopMode lastAutoMode, TeleopMode newAutoMode) {
         // Cancel all active commands
         TrackedCommand.cancelAll();
 
@@ -140,7 +155,10 @@ public class RobotContainer {
                 centerWheels.schedule();
                 break;
             case CAMERA_TOWER_TEST:
-                cameraSnapCommand.schedule();
+                cameraScanCommand.schedule();
+                break;
+            case AUTO_MAZE:
+                mazeAutoCommand.schedule();
                 break;
             default:
                 break;
@@ -152,11 +170,11 @@ public class RobotContainer {
      * Monitors auto mode selection and triggers mode change handler when mode changes.
      */
     public void processManualInput() {
-        AutoMode currentMode = NetworkSubsystem.autoModeChooser.getSelected();
+        TeleopMode currentMode = NetworkSubsystem.teleopModeChooser.getSelected();
 
         if (lastMode != currentMode) {
             OnLastModeChange(lastMode, currentMode);
-            lastMode = NetworkSubsystem.autoModeChooser.getSelected();
+            lastMode = NetworkSubsystem.teleopModeChooser.getSelected();
         }
 
         // switch (currentMode) {

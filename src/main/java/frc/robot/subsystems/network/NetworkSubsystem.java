@@ -12,16 +12,17 @@ public class NetworkSubsystem {
     /**
      * Available autonomous/teleop operating modes.
      */
-    public static enum AutoMode {
+    public static enum TeleopMode {
         NONE,
         JOYSTICK_DRIVE,
         CENTER_WHEELS,
         CRAB_WALK,
-        CAMERA_TOWER_TEST
+        CAMERA_TOWER_TEST,
+        AUTO_MAZE
     }
 
     /** SendableChooser for auto mode selection on dashboard */
-    public static final SendableChooser<AutoMode> autoModeChooser = new SendableChooser<>();
+    public static final SendableChooser<TeleopMode> teleopModeChooser = new SendableChooser<>();
 
     // Controller parameters
     public static final DashboardValue<Double> TURN_SENSITIVITY = new DashboardValue<>(
@@ -62,12 +63,13 @@ public class NetworkSubsystem {
      * Must be called once during robot initialization.
      */
     public static void Init() {
-        autoModeChooser.setDefaultOption("Joystick Drive", AutoMode.JOYSTICK_DRIVE);
-        autoModeChooser.addOption("None", AutoMode.NONE);
-        autoModeChooser.addOption("Crab Walk", AutoMode.CRAB_WALK);
-        autoModeChooser.addOption("Center Wheels", AutoMode.CENTER_WHEELS);
-        autoModeChooser.addOption("Camera Tower Test", AutoMode.CAMERA_TOWER_TEST);
-        SmartDashboard.putData("Auto Mode", NetworkSubsystem.autoModeChooser);
+        teleopModeChooser.setDefaultOption("Joystick Drive", TeleopMode.JOYSTICK_DRIVE);
+        teleopModeChooser.addOption("None", TeleopMode.NONE);
+        teleopModeChooser.addOption("Crab Walk", TeleopMode.CRAB_WALK);
+        teleopModeChooser.addOption("Center Wheels", TeleopMode.CENTER_WHEELS);
+        teleopModeChooser.addOption("Camera Tower Test", TeleopMode.CAMERA_TOWER_TEST);
+        teleopModeChooser.addOption("Auto Maze", TeleopMode.AUTO_MAZE);
+        SmartDashboard.putData("Auto Mode", NetworkSubsystem.teleopModeChooser);
 
         for (DashboardValue<?> value : DashboardValue.values) {
             value.setDefault();
