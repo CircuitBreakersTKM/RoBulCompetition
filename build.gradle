@@ -116,6 +116,8 @@ import org.gradle.api.tasks.Exec
 def piAddress = "10.0.3.11"
 def piUser = "pi"
 def piPath = "/home/pi/qrdetector/"
+def sshCmd = "C:/Windows/System32/OpenSSH/ssh.exe"
+def scpCmd = "C:/Windows/System32/OpenSSH/scp.exe"
 
 tasks.register("deployCoprocessor") {
     group = "FRC"
@@ -123,23 +125,24 @@ tasks.register("deployCoprocessor") {
 
     doLast {
         println "Creating directory on ${piAddress}..."
-        exec {
-            commandLine "ssh", "${piUser}@${piAddress}", "mkdir", "-p", piPath
+        project.exec {
+            commandLine sshCmd, "${piUser}@${piAddress}", "mkdir", "-p", piPath
         }
 
         println "Copying qrdetector.py..."
-        exec {
-            commandLine "scp", "coprocessor/qrdetector.py", "${piUser}@${piAddress}:${piPath}"
+        project.exec {
+            commandLine scpCmd, "coprocessor/qrdetector.py", "${piUser}@${piAddress}:${piPath}"
         }
 
         println "Restarting service on Raspberry Pi..."
-        exec {
-            commandLine "ssh", "${piUser}@${piAddress}", "sudo", "systemctl", "restart", "qr-detector.service"
+        project.exec {
+            commandLine sshCmd, "${piUser}@${piAddress}", "sudo", "systemctl", "restart", "qr-detector.service"
         }
 
         println "✅ Deploy complete."
     }
 }
+
 
 // Hook it into WPILib's deploy
 // tasks.named("deploy") {
