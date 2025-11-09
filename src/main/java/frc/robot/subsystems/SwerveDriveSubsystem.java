@@ -26,13 +26,20 @@ import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubsystem{
     public final SwerveDrive swerveDrive;
 
+    public boolean skipRateLimiting = false;
+
     private double maxSpeed = 2.5;
     private double minSpeed = 2;
+
+    public boolean headingCorrection = true;
 
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
     
     private RateLimiter2D speedLimiter = new RateLimiter2D(NetworkSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
     private RateLimiter rotLimiter = new RateLimiter(NetworkSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
+    
+    private Double targetHeading = null; // Stored heading for drift compensation
+    private static final double HEADING_KP = 2.0; // Proportional gain for heading correction
     
     /**
      * Creates a new SwerveDriveSubsystem by loading configuration from JSON files.
@@ -45,9 +52,6 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     
         swerveDrive = new SwerveParser(swerveJsonDirectory).createSwerveDrive(4.8);
         swerveDrive.useInternalFeedbackSensor();
-
-        // swerveDrive.setHeadingCorrection(false);
-        // swerveDrive.setCosineCompensator(false);
 
         SwerveDriveTelemetry.verbosity = TelemetryVerbosity.HIGH;
     }
@@ -84,12 +88,19 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
         double speedX = magnitude * Math.cos(angle);
         double speedY = magnitude * Math.sin(angle);
 
+        Translation2d speeds = new Translation2d(speedX, speedY);
+
         // Apply rate limiting
-        rot = rotLimiter.calculate(rot);
+        if (!skipRateLimiting) {
+            rot = rotLimiter.calculate(rot);
 
-        Translation2d limitedSpeeds = speedLimiter.calculate(new Translation2d(speedX, speedY));
+            speeds = speedLimiter.calculate(speeds);
+        }
 
-        swerveDrive.drive(limitedSpeeds, rot, fieldRelative, isOpenLoop);
+        // Apply drift compensation
+        rot = applyDriftCompensation(rot);
+
+        swerveDrive.drive(speeds, rot, fieldRelative, isOpenLoop);
     }
     
     /**
@@ -110,10 +121,54 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
         double speedX = magnitude * Math.cos(angle);
         double speedY = magnitude * Math.sin(angle);
 
+        Translation2d speeds = new Translation2d(speedX, speedY);
+
         // Apply rate limiting
-        rot = rotLimiter.calculate(rot);
-        Translation2d limitedSpeeds = speedLimiter.calculate(new Translation2d(speedX, speedY));
-        swerveDrive.drive(limitedSpeeds, rot, fieldRelative, isOpenLoop);
+        if (!skipRateLimiting) {
+            rot = rotLimiter.calculate(rot);
+            speeds = speedLimiter.calculate(speeds);
+        }
+        
+        // Apply drift compensation
+        rot = applyDriftCompensation(rot);
+        
+        swerveDrive.drive(speeds, rot, fieldRelative, isOpenLoop);
+    }
+    
+    /**
+     * Applies drift compensation to rotation input.
+     * If rotation is 0, maintains the stored heading by calculating correction.
+     * If rotation is non-zero, updates the stored heading to current gyro angle.
+     * 
+     * @param rotation The rotation input from the driver
+     * @return The compensated rotation value
+     */
+    private double applyDriftCompensation(double rotation) {
+        if (!headingCorrection) return rotation;
+        
+        double currentHeading = swerveDrive.getYaw().getRadians();
+        
+        if (Math.abs(rotation) < 0.01) { // rotation == 0 (with small tolerance)
+            // Driver wants to maintain heading - apply drift compensation
+            if (targetHeading == null) {
+                // First time with no rotation, store current heading
+                targetHeading = currentHeading;
+            }
+            
+            // Calculate heading error and apply proportional correction
+            double headingError = targetHeading - currentHeading;
+            
+            // Normalize error to [-PI, PI]
+            while (headingError > Math.PI) headingError -= 2 * Math.PI;
+            while (headingError < -Math.PI) headingError += 2 * Math.PI;
+            
+            // Return correction to compensate for drift
+            return headingError * HEADING_KP;
+        } else {
+            // Driver is actively rotating - update target heading
+            targetHeading = currentHeading;
+            return rotation;
+        }
     }
     
     /**
@@ -121,6 +176,7 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
      */
     public void zeroGyro() {
         swerveDrive.zeroGyro();
+        targetHeading = null; // Reset drift compensation
     }
 
     /**
