@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.MotorizedSubsystem;
 import frc.robot.math.MathHelper;
@@ -31,14 +32,15 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     private double maxSpeed = 2.5;
     private double minSpeed = 2;
 
-    public boolean headingCorrection = true;
-
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
     
     private RateLimiter2D speedLimiter = new RateLimiter2D(NetworkSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
     private RateLimiter rotLimiter = new RateLimiter(NetworkSubsystem.MAX_ANGULAR_ACCELERATION.get(), 8*Math.PI, 1);
     
+    public boolean headingCorrection = true;
+    public double noHeadingCorrectionTimeout = 0.3; // seconds before heading correction resumes
     private Double targetHeading = null; // Stored heading for drift compensation
+    private double lastRotationTime = 0; // Timestamp when rotation was last non-zero
     private static final double HEADING_KP = 2.0; // Proportional gain for heading correction
     
     /**
@@ -145,10 +147,18 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
      */
     private double applyDriftCompensation(double rotation) {
         if (!headingCorrection) return rotation;
-        
+    
         double currentHeading = swerveDrive.getYaw().getRadians();
+        double currentTime = Timer.getFPGATimestamp();
         
         if (Math.abs(rotation) < 0.01) { // rotation == 0 (with small tolerance)
+            // Check if we're still within the timeout period after last rotation
+            if (currentTime - lastRotationTime < noHeadingCorrectionTimeout) {
+                // Still in timeout, don't apply heading correction
+                targetHeading = null;
+                return rotation;
+            }
+            
             // Driver wants to maintain heading - apply drift compensation
             if (targetHeading == null) {
                 // First time with no rotation, store current heading
@@ -165,7 +175,8 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
             // Return correction to compensate for drift
             return headingError * HEADING_KP;
         } else {
-            // Driver is actively rotating - update target heading
+            // Driver is actively rotating - update target heading and timestamp
+            lastRotationTime = currentTime;
             targetHeading = currentHeading;
             return rotation;
         }

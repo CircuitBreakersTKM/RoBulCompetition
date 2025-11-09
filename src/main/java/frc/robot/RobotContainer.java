@@ -10,7 +10,6 @@ import frc.robot.subsystems.network.NetworkSubsystem.TeleopMode;
 import frc.robot.commands.*;
 import frc.robot.commands.auto_routines.MazeAutoCommand;
 import frc.robot.commands.camera.CameraScanCommand;
-import frc.robot.commands.camera.CameraSnapCommand;
 import frc.robot.commands.camera.CameraTurnCommand;
 import frc.robot.commands.drive_modes.CrabDriveCommand;
 import frc.robot.commands.drive_modes.JoystickDriveCommand;
@@ -70,7 +69,7 @@ public class RobotContainer {
         instance = this;
 
         cameraTurnCommand = new CameraTurnCommand(cameraTower, 
-            () -> controller.getLeftBumperButton() ? -1.0 : controller.getRightBumperButton() ? 1.0 : 0.0
+            () -> controller.getLeftBumperButton() ? 1.0 : controller.getRightBumperButton() ? -1.0 : 0.0
         );
         cameraScanCommand = new CameraScanCommand(cameraTower,
             () -> controller.getPOV(), 
