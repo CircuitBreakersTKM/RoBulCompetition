@@ -31,7 +31,7 @@ QR_SIZE_CENTIMETERS = 16.6 # Physical size of the QR codes side in centimeters
 #    Example: If w=166 pixels at 100cm distance: (166 × 100) / 16.6 = 1000 pixels
 # 4. Update the value below and restart the script
 # 5. Verify accuracy by testing at multiple known distances
-CAMERA_FOCAL_LENGTH_PIXELS = 1000  # Default estimate - calibrate for your specific camera
+CAMERA_FOCAL_LENGTH_PIXELS = 632.53  # Default estimate - calibrate for your specific camera
 
 # === INITIALIZE NETWORKTABLES ===
 # Use the default FRC team IP scheme: 10.TE.AM.2
