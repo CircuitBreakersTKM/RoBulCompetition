@@ -235,4 +235,8 @@ public class QRDirectionSubsystem extends SubsystemBase {
         // Distance from front edge of robot to QR
         return qrY + (ROBOT_LENGTH_CM / 2.0);
     }
+
+    public int getTicker() {
+        return (int)qrTable.getEntry(prefix + "ticker").getDouble(0);
+    }
 }

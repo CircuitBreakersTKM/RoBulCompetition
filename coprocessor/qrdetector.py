@@ -64,7 +64,7 @@ print("[INFO] QR detector started successfully.")
 
 # === MAIN LOOP ===
 last_detect_time = 0
-DETECTION_TIMEOUT = 1.0  # seconds before clearing stale data
+DETECTION_TIMEOUT = 0.3  # seconds before clearing stale data
 ticker = 0
 
 while True:
@@ -74,9 +74,12 @@ while True:
         time.sleep(0.1)
         continue
 
-    # Decode all QR codes in the frame
-    qrs = decode(frame)
+    # Rotate frame 90 degrees counter-clockwise (top is on right, need to rotate left)
+    frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
+    # Use pyzbar - more reliable, no false positives
+    qrs = decode(frame)
+    
     if qrs:
         # Find the largest QR code (by bounding box area)
         largest_qr = max(qrs, key=lambda q: q.rect.width * q.rect.height)
@@ -105,13 +108,13 @@ while True:
 
         last_detect_time = time.time()
         # print(f"[QR] {qr_data} (area={area:.0f}, distance={distance_cm:.1f}cm)")
-    else:
-        # If no QR detected for a while, clear entries
-        if time.time() - last_detect_time > DETECTION_TIMEOUT:
-            qr_table.putBoolean(PREFIX + "hasTarget", False)
-            qr_table.putString(PREFIX + "data", "")
-            qr_table.putNumber(PREFIX + "distance", 0.0)
-            qr_table.putNumber(PREFIX + "width", 0.0)
+    
+    # Always check timeout, even if we just detected
+    if time.time() - last_detect_time > DETECTION_TIMEOUT:
+        qr_table.putBoolean(PREFIX + "hasTarget", False)
+        qr_table.putString(PREFIX + "data", "")
+        qr_table.putNumber(PREFIX + "distance", 0.0)
+        qr_table.putNumber(PREFIX + "width", 0.0)
 
 cap.release()
 cv2.destroyAllWindows()

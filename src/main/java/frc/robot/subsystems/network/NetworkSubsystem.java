@@ -43,7 +43,7 @@ public class NetworkSubsystem {
     public static final DashboardValue<Boolean> OVERRIDE_LOW_VOLTAGE_LIMIERS = new DashboardValue<>(
         "Chassis/Advanced/Override low voltage limiters", false);
 
-    // Chassis advanced parameters
+    // Chassis/advanced parameters
     public static final DashboardValue<Double> MAX_ACCELERATION = new DashboardValue<>(
         "Chassis/Advanced/Max acceleration (ms^-2)", 3.0);
     public static final DashboardValue<Double> MAX_ANGULAR_ACCELERATION = new DashboardValue<>(
@@ -55,7 +55,7 @@ public class NetworkSubsystem {
 
     // Camera tower parameters
     public static final DashboardValue<Double> CAMERA_MOTOR_MAX_SPEED = new DashboardValue<>(
-        "Camera Tower/Motor speed", 0.25);
+        "Camera Tower/Motor speed", 0.5);
 
     /**
      * Initializes the NetworkSubsystem by setting up the auto mode chooser

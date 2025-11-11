@@ -69,11 +69,11 @@ public class RobotContainer {
         instance = this;
 
         cameraTurnCommand = new CameraTurnCommand(cameraTower, 
-            () -> controller.getLeftBumperButton() ? 1.0 : controller.getRightBumperButton() ? -1.0 : 0.0
+            () -> controller.getLeftBumperButton() ? 0.1 : controller.getRightBumperButton() ? -0.1 : 0.0
         );
         cameraScanCommand = new CameraScanCommand(cameraTower,
             () -> controller.getPOV(), 
-        15);
+        10);
         laserMoveCommand = new LaserMoveCommand(laserTurret, 
             () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
             () -> MathUtil.applyDeadband(controller.getRightY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
@@ -176,52 +176,19 @@ public class RobotContainer {
             lastMode = NetworkSubsystem.teleopModeChooser.getSelected();
         }
 
-        // switch (currentMode) {
-        //     case CAMERA_TOWER_TEST -> {
-        //         double currentPosition = cameraTower.azimuthMotor.getEncoder().getPosition() / 100 * 360;
-        //         double povInput = -controller.getPOV();
-        //         double allowedError = 2; //deg
-        //         double maxSpeed = 1;
-        //         double minSpeed = 0.05; // Minimum speed to prevent stalling
-        //         double slowdownRange = 25; // Start slowing down 30 degrees before target
-
-        //         // If POV pressed, update target angle
-        //         if (povInput != 1) {
-        //             // Normalize desired position to 0-360 range
-        //             cameraTargetAngle = povInput % 360;
-        //             if (cameraTargetAngle < 0) cameraTargetAngle += 360;
-        //         }
-
-        //         // Scale positions so current is always at 180° to find shortest path
-        //         double scaledCurrent = 180;
-        //         double scaledDesired = cameraTargetAngle - currentPosition + 180;
-                
-        //         // Normalize scaled desired to 0-360 range
-        //         scaledDesired = scaledDesired % 360;
-        //         if (scaledDesired < 0) scaledDesired += 360;
-
-        //         // Calculate error (shortest path)
-        //         double error = scaledDesired - scaledCurrent;
-
-        //         if (Math.abs(error) < allowedError) {
-        //             cameraTower.setSpeed(0);
-        //             break;
-        //         }
-                
-        //         // Scale speed proportionally to distance
-        //         double speed;
-        //         if (Math.abs(error) > slowdownRange) {
-        //             // Full speed when far from target
-        //             speed = maxSpeed;
-        //         } else {
-        //             // Proportional speed when close to target
-        //             speed = minSpeed + (maxSpeed - minSpeed) * (Math.abs(error) / slowdownRange);
-        //         }
-                
-        //         cameraTower.setSpeed(Math.copySign(speed, error));
-        //     }
-        //     default -> {}
-        // }
+        switch (currentMode) {
+            case CAMERA_TOWER_TEST:
+                if (controller.getAButton()) {
+                    ((CameraScanCommand) cameraScanCommand).startScanning();
+                }
+                else {
+                    ((CameraScanCommand) cameraScanCommand).stopScanning();
+                }
+                break;
+        
+            default:
+                break;
+        }
     }
 
     /**
