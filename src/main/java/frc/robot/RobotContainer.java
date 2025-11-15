@@ -1,11 +1,13 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.CameraTowerSubsystem;
 import frc.robot.subsystems.LaserTurretSubsystem;
 import frc.robot.subsystems.QRDirectionSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 import frc.robot.subsystems.network.NetworkSubsystem;
+import frc.robot.subsystems.network.NetworkSubsystem.AutoMode;
 import frc.robot.subsystems.network.NetworkSubsystem.TeleopMode;
 import frc.robot.commands.*;
 import frc.robot.commands.auto_routines.MazeAutoCommand;
@@ -39,14 +41,17 @@ public class RobotContainer {
     private final Command centerWheels;
 
     private final Command cameraTurnCommand;
-    private final Command cameraScanCommand;
     private final Command laserMoveCommand;
 
     private final Command mazeAutoCommand;
 
     private final Command zeroGyroCommand;
 
-    private TeleopMode lastMode = TeleopMode.NONE;
+    public DigitalInput testLimitSwitch = new DigitalInput(0);
+    private boolean lastValue = false;
+
+    private TeleopMode lastTeleopMode = TeleopMode.NONE;
+    private AutoMode lastAutoMode = AutoMode.NONE;
     
     /**
      * Private constructor initializes all subsystems and commands.
@@ -71,9 +76,6 @@ public class RobotContainer {
         cameraTurnCommand = new CameraTurnCommand(cameraTower, 
             () -> controller.getLeftBumperButton() ? 0.1 : controller.getRightBumperButton() ? -0.1 : 0.0
         );
-        cameraScanCommand = new CameraScanCommand(cameraTower,
-            () -> controller.getPOV(), 
-        10);
         laserMoveCommand = new LaserMoveCommand(laserTurret, 
             () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
             () -> MathUtil.applyDeadband(controller.getRightY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
@@ -112,16 +114,10 @@ public class RobotContainer {
         });
     }
     
-    /**
-     * Called when teleop mode begins.
-     * Applies low battery limiters, resets camera encoder, and schedules gyro zero command.
-     */
-    public void teleopInit() {
+    public void init() {
         if (!NetworkSubsystem.OVERRIDE_LOW_VOLTAGE_LIMIERS.get()) {
             swerve.applyLowBatteryLimiters();
         }
-        
-        cameraTower.zeroEncoder();
 
         if (!zeroGyroCommand.isScheduled()) {
             zeroGyroCommand.schedule();
@@ -129,18 +125,37 @@ public class RobotContainer {
     }
     
     /**
+     * Called periodically during teleop.
+     * Monitors auto mode selection and triggers mode change handler when mode changes.
+     */
+    public void teleopPeriodic() {
+        TeleopMode currentMode = NetworkSubsystem.teleopModeChooser.getSelected();
+
+        if (lastTeleopMode != currentMode) {
+            OnLastModeChange(lastTeleopMode, currentMode);
+            lastTeleopMode = NetworkSubsystem.teleopModeChooser.getSelected();
+        }
+
+        switch (currentMode) {
+            // case 
+            default:
+                break;
+        }
+    }
+
+    /**
      * Handles auto mode transitions by canceling all active commands
      * and scheduling commands appropriate for the new mode.
      * 
-     * @param lastAutoMode The previous auto mode
-     * @param newAutoMode The new auto mode to activate
+     * @param lastMode The previous auto mode
+     * @param newMode The new auto mode to activate
      */
-    public void OnLastModeChange(TeleopMode lastAutoMode, TeleopMode newAutoMode) {
+    public void OnLastModeChange(TeleopMode lastMode, TeleopMode newMode) {
         // Cancel all active commands
         TrackedCommand.cancelAll();
 
         // Schedule commands based on the new mode
-        switch (newAutoMode) {
+        switch (newMode) {
             case JOYSTICK_DRIVE:
                 cameraTurnCommand.schedule();
                 laserMoveCommand.schedule();
@@ -153,39 +168,28 @@ public class RobotContainer {
             case CENTER_WHEELS:
                 centerWheels.schedule();
                 break;
-            case CAMERA_TOWER_TEST:
-                cameraScanCommand.schedule();
-                break;
-            case AUTO_MAZE:
-                mazeAutoCommand.schedule();
-                break;
             default:
                 break;
         }
     }
-    
-    /**
-     * Called periodically during teleop.
-     * Monitors auto mode selection and triggers mode change handler when mode changes.
-     */
-    public void processManualInput() {
-        TeleopMode currentMode = NetworkSubsystem.teleopModeChooser.getSelected();
 
-        if (lastMode != currentMode) {
-            OnLastModeChange(lastMode, currentMode);
-            lastMode = NetworkSubsystem.teleopModeChooser.getSelected();
+    public void autonomousPeriodic() {
+        AutoMode currentMode = NetworkSubsystem.autoModeChooser.getSelected();
+
+        if (lastAutoMode != currentMode) {
+            OnLastModeChange(lastAutoMode, currentMode);
+            lastAutoMode = NetworkSubsystem.autoModeChooser.getSelected();
         }
+    }
+    public void OnLastModeChange(AutoMode lastMode, AutoMode newMode) {
+        // Cancel all active commands
+        TrackedCommand.cancelAll();
 
-        switch (currentMode) {
-            case CAMERA_TOWER_TEST:
-                if (controller.getAButton()) {
-                    ((CameraScanCommand) cameraScanCommand).startScanning();
-                }
-                else {
-                    ((CameraScanCommand) cameraScanCommand).stopScanning();
-                }
+        // Schedule commands based on the new mode
+        switch (newMode) {
+            case MAZE:
+                mazeAutoCommand.schedule();
                 break;
-        
             default:
                 break;
         }

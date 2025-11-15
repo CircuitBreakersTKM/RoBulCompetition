@@ -6,6 +6,7 @@ import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.CameraTowerSubsystem;
 import frc.robot.subsystems.QRDirectionSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
+import frc.robot.subsystems.network.NetworkSubsystem;
 import frc.robot.commands.camera.CameraScanCommand;
 
 public class MazeAutoCommand extends TrackedCommand {
@@ -39,6 +40,8 @@ public class MazeAutoCommand extends TrackedCommand {
 
     @Override
     public void initialize() {
+        NetworkSubsystem.ENABLE_QR_SCANNING.set(true);
+
         cameraScanCommand.schedule();
         lastInstruction = "";
         qrSubsystem.resetCounts();
@@ -102,7 +105,7 @@ public class MazeAutoCommand extends TrackedCommand {
         swerveDrive.processCarteseanInput(
             driveVector,
             0,
-            true,
+            false,
             false
         );
     }
@@ -120,6 +123,7 @@ public class MazeAutoCommand extends TrackedCommand {
         swerveDrive.stop();
         swerveDrive.skipRateLimiting = false;
         cameraScanCommand.cancel();
+        NetworkSubsystem.ENABLE_QR_SCANNING.set(false);
     }
 
     @Override

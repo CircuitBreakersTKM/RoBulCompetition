@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void teleopInit() {
-        robotContainer.teleopInit();
+        robotContainer.init();
     }
 
     /**
@@ -39,9 +39,20 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         CommandScheduler.getInstance().run();
-        robotContainer.processManualInput();
+        robotContainer.teleopPeriodic();
     }
 
     @Override
     public void teleopExit() {}
+
+    @Override
+    public void autonomousInit() {
+        robotContainer.init();
+    }
+
+    @Override
+    public void autonomousPeriodic() {
+        CommandScheduler.getInstance().run();
+        robotContainer.autonomousPeriodic();
+    }
 }

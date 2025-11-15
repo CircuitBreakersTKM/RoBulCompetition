@@ -16,13 +16,21 @@ public class NetworkSubsystem {
         NONE,
         JOYSTICK_DRIVE,
         CENTER_WHEELS,
-        CRAB_WALK,
-        CAMERA_TOWER_TEST,
-        AUTO_MAZE
+        CRAB_WALK
+    }
+
+    public static enum AutoMode {
+        NONE,
+        MAZE
     }
 
     /** SendableChooser for auto mode selection on dashboard */
     public static final SendableChooser<TeleopMode> teleopModeChooser = new SendableChooser<>();
+    public static final SendableChooser<AutoMode> autoModeChooser = new SendableChooser<>();
+
+    // QR Parameter
+    public static final DashboardValue<Boolean> ENABLE_QR_SCANNING = new DashboardValue<>(
+        "Camera Tower/QR Detector/enable", false);
 
     // Controller parameters
     public static final DashboardValue<Double> TURN_SENSITIVITY = new DashboardValue<>(
@@ -67,9 +75,12 @@ public class NetworkSubsystem {
         teleopModeChooser.addOption("None", TeleopMode.NONE);
         teleopModeChooser.addOption("Crab Walk", TeleopMode.CRAB_WALK);
         teleopModeChooser.addOption("Center Wheels", TeleopMode.CENTER_WHEELS);
-        teleopModeChooser.addOption("Camera Tower Test", TeleopMode.CAMERA_TOWER_TEST);
-        teleopModeChooser.addOption("Auto Maze", TeleopMode.AUTO_MAZE);
-        SmartDashboard.putData("Auto Mode", NetworkSubsystem.teleopModeChooser);
+        SmartDashboard.putData("Teleop Mode", NetworkSubsystem.teleopModeChooser);
+
+        autoModeChooser.setDefaultOption("None", AutoMode.NONE);
+        autoModeChooser.addOption("Maze", AutoMode.MAZE);
+        SmartDashboard.putData("Auto Mode", NetworkSubsystem.autoModeChooser);
+
 
         for (DashboardValue<?> value : DashboardValue.values) {
             value.setDefault();
