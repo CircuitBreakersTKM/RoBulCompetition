@@ -124,11 +124,6 @@ tasks.register("deployCoprocessor") {
     description = "Deploys QR Detector to Raspberry Pi"
 
     doLast {
-        println "Creating directory on ${piAddress}..."
-        project.exec {
-            commandLine sshCmd, "${piUser}@${piAddress}", "mkdir", "-p", piPath
-        }
-
         println "Copying qrdetector.py..."
         project.exec {
             commandLine scpCmd, "coprocessor/qrdetector.py", "${piUser}@${piAddress}:${piPath}"
@@ -136,7 +131,7 @@ tasks.register("deployCoprocessor") {
 
         println "Restarting service on Raspberry Pi..."
         project.exec {
-            commandLine sshCmd, "${piUser}@${piAddress}", "sudo", "systemctl", "restart", "qr-detector.service"
+            commandLine sshCmd, "${piUser}@${piAddress}", "sudo", "systemctl", "restart", "qr_detector.service"
         }
 
         println "✅ Deploy complete."
