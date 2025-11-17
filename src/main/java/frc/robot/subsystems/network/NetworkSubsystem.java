@@ -21,7 +21,8 @@ public class NetworkSubsystem {
 
     public static enum AutoMode {
         NONE,
-        MAZE
+        MAZE,
+        TEST
     }
 
     /** SendableChooser for auto mode selection on dashboard */
@@ -59,7 +60,7 @@ public class NetworkSubsystem {
 
     // Laser turret parameters
     public static final DashboardValue<Double> LASER_MOTOR_MAX_SPEED = new DashboardValue<>(
-        "Laser Turret/Motor speed", 0.25);
+        "Laser Turret/Motor speed", 1.0);
 
     // Camera tower parameters
     public static final DashboardValue<Double> CAMERA_MOTOR_MAX_SPEED = new DashboardValue<>(
@@ -79,6 +80,7 @@ public class NetworkSubsystem {
 
         autoModeChooser.setDefaultOption("None", AutoMode.NONE);
         autoModeChooser.addOption("Maze", AutoMode.MAZE);
+        autoModeChooser.addOption("Test", AutoMode.TEST);
         SmartDashboard.putData("Auto Mode", NetworkSubsystem.autoModeChooser);
 
 

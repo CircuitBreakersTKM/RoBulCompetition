@@ -29,7 +29,7 @@ public class LaserMoveCommand extends TrackedCommand {
 
     @Override
     public void execute() {
-        laserTurret.setSpeed(azimuthSupplier.getAsDouble(), altitudeSupplier.getAsDouble());
+        laserTurret.setSpeed(azimuthSupplier.getAsDouble() * 0.5, altitudeSupplier.getAsDouble() * 0.5);
     }
 
     @Override

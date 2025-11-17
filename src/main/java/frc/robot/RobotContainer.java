@@ -11,6 +11,7 @@ import frc.robot.subsystems.network.NetworkSubsystem.AutoMode;
 import frc.robot.subsystems.network.NetworkSubsystem.TeleopMode;
 import frc.robot.commands.*;
 import frc.robot.commands.auto_routines.MazeAutoCommand;
+import frc.robot.commands.auto_routines.PointAtBlobCommand;
 import frc.robot.commands.camera.CameraScanCommand;
 import frc.robot.commands.camera.CameraTurnCommand;
 import frc.robot.commands.drive_modes.CrabDriveCommand;
@@ -44,11 +45,9 @@ public class RobotContainer {
     private final Command laserMoveCommand;
 
     private final Command mazeAutoCommand;
+    private final Command lookAtBlobCommand;
 
     private final Command zeroGyroCommand;
-
-    public DigitalInput testLimitSwitch = new DigitalInput(0);
-    private boolean lastValue = false;
 
     private TeleopMode lastTeleopMode = TeleopMode.NONE;
     private AutoMode lastAutoMode = AutoMode.NONE;
@@ -103,6 +102,7 @@ public class RobotContainer {
             qrDirectionSubsystem,
             0.5
         );
+        lookAtBlobCommand = new PointAtBlobCommand(laserTurret);
         
         zeroGyroCommand = Commands.run(
         () -> {
@@ -189,6 +189,9 @@ public class RobotContainer {
         switch (newMode) {
             case MAZE:
                 mazeAutoCommand.schedule();
+                break;
+            case TEST:
+                lookAtBlobCommand.schedule();
                 break;
             default:
                 break;
