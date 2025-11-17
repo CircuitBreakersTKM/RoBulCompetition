@@ -67,7 +67,7 @@ ticker = 0
 while True:
     NetworkTables.flush() # Ensure timely updates
 
-    if not qr_table.getBoolean(PREFIX + "enabled", True):
+    if not qr_table.getBoolean(PREFIX + "enable", True):
         time.sleep(0.1)
         continue
     # ———————— CRITICAL LOW-LATENCY FIX ————————
