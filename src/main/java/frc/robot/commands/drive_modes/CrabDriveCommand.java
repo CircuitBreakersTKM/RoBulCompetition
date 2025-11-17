@@ -62,7 +62,7 @@ public class CrabDriveCommand extends TrackedCommand {
                 return;
             }
 
-            angle = Math.round(rotation / 90.0) * 90.0;
+            angle = Math.round(angle / 90.0) * 90.0;
         }
 
         angle = Math.toRadians(angle);
