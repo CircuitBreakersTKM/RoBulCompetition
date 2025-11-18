@@ -16,7 +16,8 @@ public class NetworkSubsystem {
         NONE,
         JOYSTICK_DRIVE,
         CENTER_WHEELS,
-        CRAB_WALK
+        CRAB_WALK,
+        SLALOM
     }
 
     public static enum AutoMode {
@@ -66,6 +67,10 @@ public class NetworkSubsystem {
     public static final DashboardValue<Double> CAMERA_MOTOR_MAX_SPEED = new DashboardValue<>(
         "Camera Tower/Motor speed", 0.5);
 
+    // Arm parameters
+    public static final DashboardValue<Double> ARM_BRUSH_SPEED = new DashboardValue<>(
+        "Arm/Brush speed", 0.25);
+
     /**
      * Initializes the NetworkSubsystem by setting up the auto mode chooser
      * and pushing all default values to NetworkTables.
@@ -76,6 +81,7 @@ public class NetworkSubsystem {
         teleopModeChooser.addOption("None", TeleopMode.NONE);
         teleopModeChooser.addOption("Crab Walk", TeleopMode.CRAB_WALK);
         teleopModeChooser.addOption("Center Wheels", TeleopMode.CENTER_WHEELS);
+        teleopModeChooser.addOption("Slalom", TeleopMode.SLALOM);
         SmartDashboard.putData("Teleop Mode", NetworkSubsystem.teleopModeChooser);
 
         autoModeChooser.setDefaultOption("None", AutoMode.NONE);
