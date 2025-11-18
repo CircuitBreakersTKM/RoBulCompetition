@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.CameraTowerSubsystem;
 import frc.robot.subsystems.LaserTurretSubsystem;
@@ -12,7 +11,6 @@ import frc.robot.subsystems.network.NetworkSubsystem.TeleopMode;
 import frc.robot.commands.*;
 import frc.robot.commands.auto_routines.MazeAutoCommand;
 import frc.robot.commands.auto_routines.PointAtBlobCommand;
-import frc.robot.commands.camera.CameraScanCommand;
 import frc.robot.commands.camera.CameraTurnCommand;
 import frc.robot.commands.drive_modes.CrabDriveCommand;
 import frc.robot.commands.drive_modes.JoystickDriveCommand;
@@ -138,8 +136,7 @@ public class RobotContainer {
 
         switch (currentMode) {
             // case 
-            default:
-                break;
+            default -> {}
         }
     }
 
@@ -156,20 +153,23 @@ public class RobotContainer {
 
         // Schedule commands based on the new mode
         switch (newMode) {
-            case JOYSTICK_DRIVE:
+            case JOYSTICK_DRIVE -> {
                 cameraTurnCommand.schedule();
                 laserMoveCommand.schedule();
                 joystickDriveCommand.schedule();
-                break;
-            case CRAB_WALK:
+            }
+            case CRAB_WALK -> {
                 crabDriveCommand.schedule();
                 cameraTurnCommand.schedule();
-                break;
-            case CENTER_WHEELS:
+            }
+            case SLALOM -> {
+                crabDriveCommand.schedule();
+                lookAtBlobCommand.schedule();
+            }
+            case CENTER_WHEELS -> {
                 centerWheels.schedule();
-                break;
-            default:
-                break;
+            }
+            default -> {}
         }
     }
 
@@ -187,14 +187,13 @@ public class RobotContainer {
 
         // Schedule commands based on the new mode
         switch (newMode) {
-            case MAZE:
+            case MAZE -> {
                 mazeAutoCommand.schedule();
-                break;
-            case TEST:
+            }
+            case TEST -> {
                 lookAtBlobCommand.schedule();
-                break;
-            default:
-                break;
+            }
+            default -> {}
         }
     }
 
