@@ -1,62 +1,94 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.RelativeEncoder;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.interfaces.MotorizedSubsystem;
-import frc.robot.subsystems.network.NetworkSubsystem;
 
-/**
- * Subsystem controlling a two-axis laser turret with azimuth and altitude control.
- * Uses two SparkMax motor controllers for independent axis movement.
- * Speed is configurable via NetworkTables dashboard.
- */
-public class LaserTurretSubsystem extends SubsystemBase implements MotorizedSubsystem {
+public class LaserTurretSubsystem extends SubsystemBase {
+
+    private static final double AZIMUTH_GEAR_RATIO = 100.0;
+    private static final double ALTITUDE_GEAR_RATIO = 100.0;
+
+    // Azimuth (horizontal)
+    private static final double AZ_kP = 0.18;
+    private static final double AZ_kI = 0.0;
+    private static final double AZ_kD = 0.01;
+    private static final double AZ_kF = 0.0;
+
+    // Altitude (vertical)
+    private static final double ALT_kP = 0.18;
+    private static final double ALT_kI = 0.0;
+    private static final double ALT_kD = 0.01;
+    private static final double ALT_kF = 0.0;
+
     public final SparkMax azimuthMotor;
     public final SparkMax altitudeMotor;
 
-    /**
-     * Creates a new LaserTurretSubsystem.
-     * 
-     * @param azimuthMotorCANID The CAN ID of the azimuth (horizontal rotation) motor controller
-     * @param altitudeMotorCANID The CAN ID of the altitude (vertical tilt) motor controller
-     */
-    public LaserTurretSubsystem(int azimuthMotorCANID, int altitudeMotorCANID) {
-        azimuthMotor = new SparkMax(azimuthMotorCANID, SparkMax.MotorType.kBrushless);
-        altitudeMotor = new SparkMax(altitudeMotorCANID, SparkMax.MotorType.kBrushless);
+    private final RelativeEncoder azEncoder;
+    private final RelativeEncoder altEncoder;
+
+    public LaserTurretSubsystem(int azimuthCanID, int altitudeCanID) {
+
+        azimuthMotor  = new SparkMax(azimuthCanID, MotorType.kBrushless);
+        altitudeMotor = new SparkMax(altitudeCanID, MotorType.kBrushless);
+
+        azEncoder  = azimuthMotor.getEncoder();
+        altEncoder = altitudeMotor.getEncoder();
+
+        // Configure azimuth motor
+        SparkMaxConfig azConfig = new SparkMaxConfig();
+        azConfig
+            .inverted(true)
+            .closedLoop
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+                .pidf(AZ_kP, AZ_kI, AZ_kD, AZ_kF);
+        
+        azimuthMotor.configure(azConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
+
+        // Configure altitude motor
+        SparkMaxConfig altConfig = new SparkMaxConfig();
+        altConfig
+            .inverted(true)
+            .closedLoop
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+                .pidf(ALT_kP, ALT_kI, ALT_kD, ALT_kF);
+        
+        altitudeMotor.configure(altConfig, SparkMax.ResetMode.kResetSafeParameters, SparkMax.PersistMode.kPersistParameters);
     }
 
-    /**
-     * Sets the speed of both turret axes.
-     * 
-     * @param speeds Expects exactly 2 values: [0]=azimuth speed, [1]=altitude speed
-     * @throws IllegalArgumentException if not exactly 2 speeds are provided
-     */
-    @Override
-    public void setSpeed(double... speeds) {
-        if (speeds.length != 2) {
-            throw new IllegalArgumentException("LaserTurretSubsystem requires exactly 2 speed values: azimuth and altitude.");
-        }
-        
-        double azimuthSpeed = speeds[0];
-        double altitudeSpeed = speeds[1];
+    // ---------- ANGLE HELPERS ----------
 
-        azimuthSpeed *= NetworkSubsystem.LASER_MOTOR_MAX_SPEED.get();
-        altitudeSpeed *= NetworkSubsystem.LASER_MOTOR_MAX_SPEED.get();
+    public double getAzimuthDegrees() {
+        return azEncoder.getPosition() * 360.0 / AZIMUTH_GEAR_RATIO;
+    }
 
+    public double getAltitudeDegrees() {
+        return altEncoder.getPosition() * 360.0 / ALTITUDE_GEAR_RATIO;
+    }
+
+    public void setAzimuthTarget(double deg) {
+        double motorRevs = deg / 360.0 * AZIMUTH_GEAR_RATIO;
+        azimuthMotor.getClosedLoopController().setReference(motorRevs, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    }
+
+    public void setAltitudeTarget(double deg) {
+        double motorRevs = deg / 360.0 * ALTITUDE_GEAR_RATIO;
+        altitudeMotor.getClosedLoopController().setReference(motorRevs, SparkBase.ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    }
+
+    public void setSpeed(double azimuthSpeed, double altitudeSpeed) {
         azimuthMotor.set(azimuthSpeed);
         altitudeMotor.set(altitudeSpeed);
     }
-    @Override
+
     public void stop() {
         azimuthMotor.stopMotor();
         altitudeMotor.stopMotor();
-    }
-
-    @Override
-    public void stopIf(boolean condition) {
-        if (condition) {
-            stop();
-        }
     }
 }
