@@ -14,10 +14,14 @@ public class NetworkSubsystem {
      */
     public static enum TeleopMode {
         NONE,
-        JOYSTICK_DRIVE,
+        LASERY_POLE,
+        LASERY_VEZ,
+        KROUZKY,
+        BLUDISTE,
+        PREDMETY,
+        SLALOM,
         CENTER_WHEELS,
-        CRAB_WALK,
-        SLALOM
+        TEST
     }
 
     public static enum AutoMode {
@@ -51,7 +55,7 @@ public class NetworkSubsystem {
     public static final DashboardValue<Double> MAX_ANGULAR_SPEED = new DashboardValue<>(
         "Chassis/Max angular speed (rads^-1)", 1.8);
     public static final DashboardValue<Boolean> OVERRIDE_LOW_VOLTAGE_LIMIERS = new DashboardValue<>(
-        "Chassis/Advanced/Override low voltage limiters", false);
+        "Chassis/Advanced/Override low voltage limiters", true);
 
     // Chassis/advanced parameters
     public static final DashboardValue<Double> MAX_ACCELERATION = new DashboardValue<>(
@@ -69,7 +73,13 @@ public class NetworkSubsystem {
 
     // Arm parameters
     public static final DashboardValue<Double> ARM_BRUSH_SPEED = new DashboardValue<>(
-        "Arm/Brush speed", 0.25);
+        "Arm/Brush speed", 0.15);
+    public static final DashboardValue<Double> ARM_SWING_SPEED = new DashboardValue<>(
+        "Arm/Swing Speed", 0.2);
+
+    // Debug parameters
+    public static final DashboardValue<Double> DEBUG_ARM_ENCODER_VALUE = new DashboardValue<> (
+    "Debug/Arm encoder value", 0.0);
 
     /**
      * Initializes the NetworkSubsystem by setting up the auto mode chooser
@@ -77,11 +87,15 @@ public class NetworkSubsystem {
      * Must be called once during robot initialization.
      */
     public static void Init() {
-        teleopModeChooser.setDefaultOption("Joystick Drive", TeleopMode.JOYSTICK_DRIVE);
-        teleopModeChooser.addOption("None", TeleopMode.NONE);
-        teleopModeChooser.addOption("Crab Walk", TeleopMode.CRAB_WALK);
-        teleopModeChooser.addOption("Center Wheels", TeleopMode.CENTER_WHEELS);
+        teleopModeChooser.setDefaultOption("None", TeleopMode.NONE);
+        teleopModeChooser.addOption("Lasery Pole", TeleopMode.LASERY_POLE);
+        teleopModeChooser.addOption("Lasery Vez", TeleopMode.LASERY_VEZ);
+        teleopModeChooser.addOption("Krouzky", TeleopMode.KROUZKY);
+        teleopModeChooser.addOption("Bludiste", TeleopMode.BLUDISTE);
+        teleopModeChooser.addOption("Predmety", TeleopMode.PREDMETY);
         teleopModeChooser.addOption("Slalom", TeleopMode.SLALOM);
+        teleopModeChooser.addOption("Center Wheels", TeleopMode.CENTER_WHEELS);
+        teleopModeChooser.addOption("Test", TeleopMode.TEST);
         SmartDashboard.putData("Teleop Mode", NetworkSubsystem.teleopModeChooser);
 
         autoModeChooser.setDefaultOption("None", AutoMode.NONE);

@@ -34,6 +34,15 @@ public class MathHelper {
 
         return sign * scaledInput;
     }
+
+    public static double ScaleLaserInput(double input) {
+        double sign = Math.signum(input);
+        double absInput = Math.abs(input);
+
+        double scaledInput = Math.pow(absInput, 1.6);
+
+        return sign * scaledInput;
+    }
     
     /**
      * Linearly interpolates between two values based on a rate parameter.

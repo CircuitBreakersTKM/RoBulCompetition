@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 
+import frc.robot.math.MathHelper;
 import frc.robot.subsystems.LaserTurretSubsystem;
 
 /**
@@ -29,7 +30,13 @@ public class LaserMoveCommand extends TrackedCommand {
 
     @Override
     public void execute() {
-        laserTurret.setSpeed(azimuthSupplier.getAsDouble() * 0.5, altitudeSupplier.getAsDouble() * 0.5);
+        double aziSpeed = azimuthSupplier.getAsDouble();
+        double altSpeed = altitudeSupplier.getAsDouble();
+
+        aziSpeed = MathHelper.ScaleRotInput(aziSpeed) * 0.4;
+        altSpeed = MathHelper.ScaleRotInput(altSpeed) * 0.4;
+
+        laserTurret.setSpeed(aziSpeed, altSpeed);
     }
 
     @Override

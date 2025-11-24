@@ -32,6 +32,8 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
     private double maxSpeed = 2.5;
     private double minSpeed = 2;
 
+    private double lastHeading = Double.MAX_VALUE;
+
     private PowerDistribution pdh = new PowerDistribution(10, PowerDistribution.ModuleType.kRev);
     
     private RateLimiter2D speedLimiter = new RateLimiter2D(NetworkSubsystem.MAX_ACCELERATION.get(), 15, 0.5);
@@ -149,6 +151,10 @@ public class SwerveDriveSubsystem extends SubsystemBase implements MotorizedSubs
         if (!headingCorrection) return rotation;
     
         double currentHeading = swerveDrive.getYaw().getRadians();
+
+        if (currentHeading == lastHeading) return rotation;
+        lastHeading = currentHeading;
+
         double currentTime = Timer.getFPGATimestamp();
         
         if (Math.abs(rotation) < 0.01) { // rotation == 0 (with small tolerance)

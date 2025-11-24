@@ -1,5 +1,6 @@
 package frc.robot.commands.drive_modes;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.geometry.Translation2d;
@@ -16,6 +17,7 @@ public class JoystickDriveCommand extends TrackedCommand {
     private final DoubleSupplier speedXSupplier;
     private final DoubleSupplier speedYSupplier;
     private final DoubleSupplier rotSupplier;
+    private final BooleanSupplier fieldRelative;
 
     /**
      * Creates a new JoystickDriveCommand.
@@ -26,11 +28,12 @@ public class JoystickDriveCommand extends TrackedCommand {
      * @param rotSupplier A DoubleSupplier that provides the desired rotational speed.
      */
     public JoystickDriveCommand(SwerveDriveSubsystem subsystem, DoubleSupplier speedXSupplier,
-                                DoubleSupplier speedYSupplier, DoubleSupplier rotSupplier) {
+                                DoubleSupplier speedYSupplier, DoubleSupplier rotSupplier, BooleanSupplier fieldRelative) {
         this.swerveDriveSubsystem = subsystem;
         this.speedXSupplier = speedXSupplier;
         this.speedYSupplier = speedYSupplier;
         this.rotSupplier = rotSupplier;
+        this.fieldRelative = fieldRelative;
 
         addRequirements(subsystem);
     }
@@ -41,7 +44,7 @@ public class JoystickDriveCommand extends TrackedCommand {
         double rot = rotSupplier.getAsDouble();
 
         // Drive the swerve drive
-        swerveDriveSubsystem.processCarteseanInput(new Translation2d(-speedX, -speedY), rot, true, true);
+        swerveDriveSubsystem.processCarteseanInput(new Translation2d(-speedX, -speedY), rot, fieldRelative.getAsBoolean(), true);
     }
 
     @Override
