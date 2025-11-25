@@ -103,8 +103,8 @@ public class RobotContainer {
         );
         lookAtBlobCommand = new PointAtBlobCommand(laserTurret);
         
-        double pickUpSpeed = 1.0;
-        double dropOffSpeed = 0.6;
+        double pickUpSpeed = 0.66;
+        double dropOffSpeed = 1.0;
         armSnapPickupCommand = new ArmSweepCommand(
             armSubsystem,
             () -> num(controller.getXButton()) - num(controller.getBButton()),

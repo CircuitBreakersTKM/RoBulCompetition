@@ -73,13 +73,17 @@ public class NetworkSubsystem {
 
     // Arm parameters
     public static final DashboardValue<Double> ARM_BRUSH_SPEED = new DashboardValue<>(
-        "Arm/Brush speed", 0.15);
+        "Arm/Brush speed", 0.2);
     public static final DashboardValue<Double> ARM_SWING_SPEED = new DashboardValue<>(
-        "Arm/Swing Speed", 0.2);
+        "Arm/Swing Speed", 0.4);
+    public static final DashboardValue<Boolean> ARM_BUTTON_OVERRIDE = new DashboardValue<>(
+        "Arm/Button override", false);
 
     // Debug parameters
     public static final DashboardValue<Double> DEBUG_ARM_ENCODER_VALUE = new DashboardValue<> (
     "Debug/Arm encoder value", 0.0);
+    public static final DashboardValue<Boolean> DEBUG_LIMIT_SWICH_READING = new DashboardValue<> (
+    "Debug/Limit switch reading", false);
 
     /**
      * Initializes the NetworkSubsystem by setting up the auto mode chooser

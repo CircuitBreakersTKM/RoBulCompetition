@@ -12,16 +12,17 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.interfaces.MotorizedSubsystem;
+import frc.robot.subsystems.network.NetworkSubsystem;
 
 public class ArmSubsystem extends SubsystemBase implements MotorizedSubsystem {
     public SparkMax armSwingMotor;
     public SparkMax sweepMotor;
     public DigitalInput armSwingLimitSwitch; // this button is normally closed, so when pressed it will return false
     
-    private static final double SWING_GEAR_RATIO = 64.0; // 64 motor rotations = 1 arm rotation
+    private static final double SWING_GEAR_RATIO = 324.0; // 324 motor rotations = 1 arm rotation
     
     private final RelativeEncoder swingEncoder;
-    private final SparkClosedLoopController swingPIDController;
+    // private final SparkClosedLoopController swingPIDController;
     
     // Position PID constants for holding (slot 0)
     private static final double kP_POS = 0.12;
@@ -29,11 +30,11 @@ public class ArmSubsystem extends SubsystemBase implements MotorizedSubsystem {
     private static final double kD_POS = 0.01;
     
     // Gravity compensation
-    private static final double kG = 0.05;
-    private static final double gravityCompensationSpeed = 0.15;
+    // private static final double kG = 0.05;
+    // private static final double gravityCompensationSpeed = 0.15;
 
-    private boolean holdingPosition = false;
-    private double holdPosition = 0.0;
+    // private boolean holdingPosition = false;
+    // private double holdPosition = 0.0;
 
     public ArmSubsystem(int armSwingMotorPort, int sweepMotorPort, int armSwingLimitSwitchDIOPort) {
         armSwingMotor = new SparkMax(armSwingMotorPort, MotorType.kBrushless);
@@ -41,7 +42,7 @@ public class ArmSubsystem extends SubsystemBase implements MotorizedSubsystem {
         armSwingLimitSwitch = new DigitalInput(armSwingLimitSwitchDIOPort);
         
         swingEncoder = armSwingMotor.getEncoder();
-        swingPIDController = armSwingMotor.getClosedLoopController();
+        // swingPIDController = armSwingMotor.getClosedLoopController();
         
         // Configure swing motor with dual PID slots
         SparkMaxConfig swingConfig = new SparkMaxConfig();
@@ -65,7 +66,7 @@ public class ArmSubsystem extends SubsystemBase implements MotorizedSubsystem {
 
     @Override
     public void periodic() {
-        if (!armSwingLimitSwitch.get()) { // remember, the limit switch is normally closed
+        if (!armSwingLimitSwitch.get() && !NetworkSubsystem.ARM_BUTTON_OVERRIDE.get()) { // remember, the limit switch is normally closed
             armSwingMotor.getEncoder().setPosition(0);
         }
     }
@@ -80,31 +81,14 @@ public class ArmSubsystem extends SubsystemBase implements MotorizedSubsystem {
             throw new IllegalArgumentException("Expected 2 speed values for ArmSubsystem");
         }
 
+        NetworkSubsystem.DEBUG_LIMIT_SWICH_READING.set(!armSwingLimitSwitch.get());
+
         double swingSpeed = speeds[0];
         
-        if (!armSwingLimitSwitch.get() && swingSpeed < 0) {
-            holdingPosition = false;
-
-            // Prevent moving arm down if limit switch is pressed - hold position
+        if (!NetworkSubsystem.ARM_BUTTON_OVERRIDE.get() && !armSwingLimitSwitch.get() && swingSpeed < 0) {
             armSwingMotor.set(0);
-        } else if (Math.abs(swingSpeed) < 0.03) {
-
-            // if (!holdingPosition) {
-            //     // Just stopped moving - capture hold position
-            //     holdPosition = swingEncoder.getPosition();
-            //     holdingPosition = true;
-            // }
-
-            // // Speed is ~0: Use position control to hold current position
-            // double angleDeg = getSwingEncoderPosition();
-            // double gravityFF = kG * Math.sin(Math.toRadians(angleDeg + 90));
-
-            // swingPIDController.setReference(holdPosition, ControlType.kPosition, ClosedLoopSlot.kSlot0, gravityFF, SparkClosedLoopController.ArbFFUnits.kPercentOut);
-            
-            armSwingMotor.set(0);
-        } else {
-            holdingPosition = false;
-            
+        }
+        else {
             armSwingMotor.set(swingSpeed);
         }
         
@@ -113,7 +97,7 @@ public class ArmSubsystem extends SubsystemBase implements MotorizedSubsystem {
 
     @Override
     public void stop() {
-        holdingPosition = false;
+        // holdingPosition = false;
         armSwingMotor.stopMotor(); 
         sweepMotor.stopMotor();
     }
