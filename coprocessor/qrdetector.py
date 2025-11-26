@@ -9,6 +9,7 @@ from pyzbar.pyzbar import decode
 from networktables import NetworkTables
 import time
 
+
 # === CONFIGURATION ===
 PHOTONVISION_STREAM_URL = "http://10.0.3.11:1182/stream.mjpg"
 TEAM_NUMBER = 3
@@ -27,7 +28,7 @@ QR_SIZE_CENTIMETERS = 16.6
 #    Example: If w=166 pixels at 100cm distance: (166 × 100) / 16.6 = 1000 pixels
 # 4. Update the value below and restart the script
 # 5. Verify accuracy by testing at multiple known distances
-CAMERA_FOCAL_LENGTH_PIXELS = 1289.15  # Default estimate - calibrate for your specific camera
+CAMERA_FOCAL_LENGTH_PIXELS = 1578.31  # Default estimate - calibrate for your specific camera
 
 # === INITIALIZE NETWORKTABLES ===
 robot_ip = f"10.{TEAM_NUMBER//100}.{TEAM_NUMBER%100}.2"
@@ -61,7 +62,7 @@ print("[INFO] QR detector started successfully.")
 
 # === MAIN LOOP ===
 last_detect_time = 0
-DETECTION_TIMEOUT = 0.3
+DETECTION_TIMEOUT = 0.1
 ticker = 0
 
 while True:
