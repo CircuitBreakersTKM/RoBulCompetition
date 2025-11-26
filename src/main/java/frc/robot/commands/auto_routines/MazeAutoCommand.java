@@ -7,11 +7,11 @@ import frc.robot.subsystems.CameraTowerSubsystem;
 import frc.robot.subsystems.QRDirectionSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 import frc.robot.subsystems.network.NetworkSubsystem;
-import frc.robot.commands.camera.CameraScanCommand;
+import frc.robot.commands.camera.CameraSnapCommand;
 
 public class MazeAutoCommand extends TrackedCommand {
     private final SwerveDriveSubsystem swerveDrive;
-    private final CameraScanCommand cameraScanCommand;
+    private final CameraSnapCommand cameraScanCommand;
     private final QRDirectionSubsystem qrSubsystem;
     
     private double driveSpeed;
@@ -19,8 +19,11 @@ public class MazeAutoCommand extends TrackedCommand {
 
     private String lastInstruction;
     private long lastQRTimestamp = 0;
-    private double lastDistance = Double.MAX_VALUE;
+    private double lastDistance = 0;
     private int lastTicker = 0;
+    private double prevDistance = 0;
+    private long prevQRTimestamp = 0;
+    private double estimatedSpeedCmPerMs = 0;
 
     private static final double SWITCH_DISTANCE_CM = 62.5;
 
@@ -30,7 +33,7 @@ public class MazeAutoCommand extends TrackedCommand {
             QRDirectionSubsystem qrSubsystem,
             double driveSpeed) {
         this.swerveDrive = swerveDrive;
-        this.cameraScanCommand = new CameraScanCommand(cameraTower, () -> this.currentFieldHeading, 12);
+        this.cameraScanCommand = new CameraSnapCommand(cameraTower, () -> this.currentFieldHeading);
         this.qrSubsystem = qrSubsystem;
         this.driveSpeed = driveSpeed;
         this.currentFieldHeading = 0;
@@ -52,9 +55,13 @@ public class MazeAutoCommand extends TrackedCommand {
 
     private void switchDirections() {
         String instruction = qrSubsystem.getQRDirection();
-        lastDistance = Double.MAX_VALUE;
+        
+        lastDistance = 0;
         lastQRTimestamp = 0;
         lastTicker = 0;
+        prevDistance = 0;
+        prevQRTimestamp = 0;
+        estimatedSpeedCmPerMs = 0;
         
         if (instruction != null && !instruction.isEmpty() && !instruction.equalsIgnoreCase(lastInstruction)) {
             if ("Right".equalsIgnoreCase(instruction)) {
@@ -86,18 +93,32 @@ public class MazeAutoCommand extends TrackedCommand {
         double distance = qrSubsystem.getDistance();
 
         if (distance != 0 && qrSubsystem.getTicker() != lastTicker) {
+            long currentTime = System.currentTimeMillis();
+            
+            // Calculate speed from previous readings
+            if (lastDistance > 0 && lastQRTimestamp > 0) {
+                double distanceDelta = lastDistance - distance;
+                long timeDelta = currentTime - lastQRTimestamp;
+                if (timeDelta > 0) {
+                    estimatedSpeedCmPerMs = distanceDelta / timeDelta;
+                }
+            }
+            
+            prevDistance = lastDistance;
+            prevQRTimestamp = lastQRTimestamp;
             lastDistance = distance;
-            lastQRTimestamp = System.currentTimeMillis();
+            lastQRTimestamp = currentTime;
             lastTicker = qrSubsystem.getTicker();
         }
 
-        if (qrSubsystem.hasTarget()) {
-            cameraScanCommand.stopScanning();
-        } else {
-            cameraScanCommand.startScanning();
+        // Estimate current distance using last known distance and calculated speed
+        double estimatedCurrentDistance = lastDistance;
+        if (lastDistance > 0 && estimatedSpeedCmPerMs > 0) {
+            long timeSinceLastReading = System.currentTimeMillis() - lastQRTimestamp;
+            estimatedCurrentDistance = lastDistance - (estimatedSpeedCmPerMs * timeSinceLastReading);
         }
-
-        if (lastDistance < SWITCH_DISTANCE_CM - (System.currentTimeMillis() - lastQRTimestamp) * driveSpeed * 100 / 1000) {
+        
+        if (estimatedCurrentDistance > 0 && estimatedCurrentDistance < SWITCH_DISTANCE_CM) {
             switchDirections();
         }
         

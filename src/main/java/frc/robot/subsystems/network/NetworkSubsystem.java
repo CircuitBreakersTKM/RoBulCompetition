@@ -19,14 +19,17 @@ public class NetworkSubsystem {
         KROUZKY,
         BLUDISTE,
         PREDMETY,
-        SLALOM,
+        SLALOM_MANUAL,
+        SLALOM_AUTONOM,
         CENTER_WHEELS,
         TEST
     }
 
     public static enum AutoMode {
         NONE,
-        MAZE,
+        LASERY_VEZ,
+        BLUDISTE,
+        PREDMETY,
         TEST
     }
 
@@ -81,9 +84,9 @@ public class NetworkSubsystem {
 
     // Debug parameters
     public static final DashboardValue<Double> DEBUG_ARM_ENCODER_VALUE = new DashboardValue<> (
-    "Debug/Arm encoder value", 0.0);
+        "Debug/Arm encoder value", 0.0);
     public static final DashboardValue<Boolean> DEBUG_LIMIT_SWICH_READING = new DashboardValue<> (
-    "Debug/Limit switch reading", false);
+        "Debug/Limit switch reading", false);
 
     /**
      * Initializes the NetworkSubsystem by setting up the auto mode chooser
@@ -97,14 +100,18 @@ public class NetworkSubsystem {
         teleopModeChooser.addOption("Krouzky", TeleopMode.KROUZKY);
         teleopModeChooser.addOption("Bludiste", TeleopMode.BLUDISTE);
         teleopModeChooser.addOption("Predmety", TeleopMode.PREDMETY);
-        teleopModeChooser.addOption("Slalom", TeleopMode.SLALOM);
+        teleopModeChooser.addOption("Slalom manual", TeleopMode.SLALOM_MANUAL);
+        teleopModeChooser.addOption("Slalom autonom", TeleopMode.SLALOM_AUTONOM);
         teleopModeChooser.addOption("Center Wheels", TeleopMode.CENTER_WHEELS);
         teleopModeChooser.addOption("Test", TeleopMode.TEST);
         SmartDashboard.putData("Teleop Mode", NetworkSubsystem.teleopModeChooser);
 
         autoModeChooser.setDefaultOption("None", AutoMode.NONE);
-        autoModeChooser.addOption("Maze", AutoMode.MAZE);
+        autoModeChooser.addOption("Lasery Vez", AutoMode.LASERY_VEZ);
+        autoModeChooser.addOption("Bludiste", AutoMode.BLUDISTE);
+        autoModeChooser.addOption("Predmety", AutoMode.PREDMETY);
         autoModeChooser.addOption("Test", AutoMode.TEST);
+
         SmartDashboard.putData("Auto Mode", NetworkSubsystem.autoModeChooser);
 
 

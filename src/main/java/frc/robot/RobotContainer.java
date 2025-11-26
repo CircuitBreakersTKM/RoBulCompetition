@@ -13,12 +13,15 @@ import frc.robot.commands.*;
 import frc.robot.commands.arm.ArmSweepCommand;
 import frc.robot.commands.auto_routines.MazeAutoCommand;
 import frc.robot.commands.auto_routines.PointAtBlobCommand;
+import frc.robot.commands.camera.CameraTurnCommand;
 import frc.robot.commands.drive_modes.CrabDriveCommand;
 import frc.robot.commands.drive_modes.JoystickDriveCommand;
+import frc.robot.commands.laser.CharacterizeTurretCommand;
+import frc.robot.commands.laser.LaserMoveCommand;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import swervelib.SwerveDriveTest;
-
+import edu.wpi.first.cscore.CameraServerJNI.TelemetryKind;
 import edu.wpi.first.math.MathUtil;
 
 /**
@@ -30,6 +33,7 @@ public class RobotContainer {
     private static RobotContainer instance = null;
 
     private final XboxController controller = new XboxController(0);
+    private final XboxController secondaryController = new XboxController(1);
 
     private final SwerveDriveSubsystem swerve;
     private final LaserTurretSubsystem laserTurret = new LaserTurretSubsystem(11, 12);
@@ -43,12 +47,15 @@ public class RobotContainer {
 
     private Command laserMoveCommand;
 
-    private final Command mazeAutoCommand;
+    private Command mazeAutoCommand;
     private final Command lookAtBlobCommand;
+    private final Command cameraTurnCommand;
     
     private final Command armSnapPickupCommand;
 
     private final Command zeroGyroCommand;
+
+    private final Command characterizeTurretCommand;
 
     private TeleopMode lastTeleopMode = TeleopMode.NONE;
     private AutoMode lastAutoMode = AutoMode.NONE;
@@ -78,11 +85,34 @@ public class RobotContainer {
             () -> MathUtil.applyDeadband(controller.getLeftY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
         );
         joystickDriveCommand = new JoystickDriveCommand(swerve,
-            () -> MathUtil.applyDeadband(controller.getLeftX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
-            () -> MathUtil.applyDeadband(controller.getLeftY(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
+            () ->  { 
+                double driverAInput = MathUtil.applyDeadband(controller.getLeftX(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
+                double driverBInput = MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
+
+                if (driverBInput > 0 && secondaryController.getPOV() == -1) { 
+                    return driverBInput;
+                }
+
+                return driverAInput;
+            },
+            () -> {
+                double driverAInput = MathUtil.applyDeadband(controller.getLeftY(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
+                double driverBInput = MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
+
+                if (driverBInput > 0) {
+                    if (secondaryController.getPOV() == 90 || secondaryController.getPOV() == 45 || secondaryController.getPOV() == 135) { // allow for any input thats partially right
+                        return -driverBInput;
+                    }
+                    else if (secondaryController.getPOV() == 270 || secondaryController.getPOV() == 225 || secondaryController.getPOV() == 315) { // allow for any input thats partially left
+                        return driverBInput;
+                    }
+                }
+
+                return driverAInput;
+            },
             () -> MathUtil.applyDeadband(controller.getLeftTriggerAxis() - controller.getRightTriggerAxis(), 
                 NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
-            () -> !controller.getLeftBumperButton()
+            () -> !controller.getLeftBumperButton() || MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get()) > 0
         );
         crabDriveCommand = new CrabDriveCommand(swerve, 
             () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
@@ -107,8 +137,12 @@ public class RobotContainer {
         double dropOffSpeed = 1.0;
         armSnapPickupCommand = new ArmSweepCommand(
             armSubsystem,
-            () -> num(controller.getXButton()) - num(controller.getBButton()),
-            () -> num(controller.getAButton()) * pickUpSpeed - num(controller.getYButton()) * dropOffSpeed
+            () -> num(secondaryController.getXButton()) - num(secondaryController.getBButton()),
+            () -> num(secondaryController.getAButton()) * pickUpSpeed - num(secondaryController.getYButton()) * dropOffSpeed
+        );
+
+        cameraTurnCommand = new CameraTurnCommand(cameraTower,
+            () -> num(controller.getLeftBumper()) * 0.2 - num(controller.getRightBumper()) * 0.2
         );
         
         zeroGyroCommand = Commands.run(
@@ -119,19 +153,30 @@ public class RobotContainer {
                 NetworkSubsystem.ZERO_ANGLE.set(false);
             }
         });
+
+        characterizeTurretCommand = new CharacterizeTurretCommand(laserTurret, true);
     }
 
     private double num(boolean b) {
         return b ? 1.0 : 0.0;
     }
     
-    public void init() {
+    public void init(boolean isAutonomous) {
         if (!NetworkSubsystem.OVERRIDE_LOW_VOLTAGE_LIMIERS.get()) {
             swerve.applyLowBatteryLimiters();
         }
 
         if (!zeroGyroCommand.isScheduled()) {
             zeroGyroCommand.schedule();
+        }
+
+        if (isAutonomous) {
+            AutoMode currentAutoMode = NetworkSubsystem.autoModeChooser.getSelected();
+            OnLastModeChange(AutoMode.NONE, currentAutoMode);
+        }
+        else {
+            TeleopMode currentTeleMode = NetworkSubsystem.teleopModeChooser.getSelected();
+            OnLastModeChange(TeleopMode.NONE, currentTeleMode);
         }
     }
     
@@ -195,11 +240,12 @@ public class RobotContainer {
             case PREDMETY -> {
                 crabDriveCommand.schedule();
             }
-            case SLALOM -> {
+            case SLALOM_MANUAL -> {
                 laserMoveCommand = new LaserMoveCommand(laserTurret, 
-                    () -> - MathUtil.applyDeadband(controller.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
-                    () -> MathUtil.applyDeadband(controller.getRightY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
+                    () -> MathUtil.applyDeadband(secondaryController.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
+                    () -> - MathUtil.applyDeadband(secondaryController.getRightY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
                 );
+
                 crabDriveCommand = new CrabDriveCommand(swerve, 
                     () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
                     () -> - controller.getPOV(), 
@@ -207,12 +253,23 @@ public class RobotContainer {
                     false);
 
                 crabDriveCommand.schedule();
+                laserMoveCommand.schedule();
+            }
+            case SLALOM_AUTONOM -> {
+                crabDriveCommand = new CrabDriveCommand(swerve, 
+                    () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
+                    () -> - controller.getPOV(), 
+                    () -> - MathUtil.applyDeadband(controller.getLeftX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()), 
+                    false);
+                
+                crabDriveCommand.schedule();
+                lookAtBlobCommand.schedule();
             }
             case CENTER_WHEELS -> {
                 centerWheels.schedule();
             }
             case TEST -> {
-                armSnapPickupCommand.schedule();
+                cameraTurnCommand.schedule();
             }
             default -> {}
         }
@@ -232,11 +289,24 @@ public class RobotContainer {
 
         // Schedule commands based on the new mode
         switch (newMode) {
-            case MAZE -> {
+            case LASERY_VEZ -> {
+                lookAtBlobCommand.schedule();
+            }
+            case BLUDISTE -> {
+                mazeAutoCommand = new MazeAutoCommand(
+                    swerve,
+                    cameraTower,
+                    qrDirectionSubsystem,
+                    0.5
+                );
+
                 mazeAutoCommand.schedule();
             }
+            case PREDMETY -> {
+
+            }
             case TEST -> {
-                lookAtBlobCommand.schedule();
+                characterizeTurretCommand.schedule();
             }
             default -> {}
         }
@@ -246,6 +316,7 @@ public class RobotContainer {
      * Cleanup method called when replacing a RobotContainer instance.
      */
     public void close() {
+
     }
     
     /**

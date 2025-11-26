@@ -14,13 +14,17 @@ public class PointAtBlobCommand extends TrackedCommand {
     
     // Target offset from camera center (in degrees)
     // Positive values move target right/up in camera frame
-    private static final double TARGET_YAW_OFFSET = 0.0; // horizontal offset
-    private static final double TARGET_PITCH_OFFSET = -3.0; // vertical offset (positive if laser is below camera)
+    private static final double TARGET_YAW_OFFSET = -5.0; // horizontal offset
+    private static final double TARGET_PITCH_OFFSET = 0.0; // vertical offset (positive if laser is below camera)
     
     private double filteredYaw = 0.0;
     private double filteredPitch = 0.0;
     private double prevFilteredYaw = 0.0;
     private double prevFilteredPitch = 0.0;
+
+    private static final double alpha = 0.4;
+
+    private static final double frequencyHz = 100.0;
 
     public PointAtBlobCommand(LaserTurretSubsystem laserTurret) {
         this.laserTurret = laserTurret;
@@ -35,7 +39,7 @@ public class PointAtBlobCommand extends TrackedCommand {
     @Override
     public void initialize() {
         super.initialize();
-        notifier.startPeriodic(10 / 1000.0); // 10 ms loop = 100hz
+        notifier.startPeriodic(1 / frequencyHz); // 10 ms loop = 100hz
     }
 
     
@@ -50,25 +54,21 @@ public class PointAtBlobCommand extends TrackedCommand {
     
         double rawYaw = target.getYaw();
         double rawPitch = target.getPitch();
-    
-        double frameTimestamp = result.getTimestampSeconds();
+
         double latencySec = result.metadata.getLatencyMillis() / 1000.0;
     
-        double now = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-        double dt = Math.max(0.001, now - frameTimestamp);
-    
         // --- FILTERING ---
-        filteredYaw = filteredYaw + 0.25 * (rawYaw - filteredYaw);
-        filteredPitch = filteredPitch + 0.25 * (rawPitch - filteredPitch);
+        filteredYaw = filteredYaw + alpha * (rawYaw - filteredYaw);
+        filteredPitch = filteredPitch + alpha * (rawPitch - filteredPitch);
     
-        double yawVel = (filteredYaw - prevFilteredYaw) / dt;
-        double pitchVel = (filteredPitch - prevFilteredPitch) / dt;
+        double yawVel = (filteredYaw - prevFilteredYaw) * frequencyHz;
+        double pitchVel = (filteredPitch - prevFilteredPitch) * frequencyHz;
     
         prevFilteredYaw = filteredYaw;
         prevFilteredPitch = filteredPitch;
     
         // --- PREDICTION ---
-        double predictT = Math.min(0.15, latencySec + 0.02);
+        double predictT = Math.min(0.15, latencySec + (1.0 / frequencyHz));
         double predictedYaw = filteredYaw + yawVel * predictT;
         double predictedPitch = filteredPitch + pitchVel * predictT;
     
