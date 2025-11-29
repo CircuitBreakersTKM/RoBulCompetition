@@ -39,7 +39,7 @@ public class MathHelper {
         double sign = Math.signum(input);
         double absInput = Math.abs(input);
 
-        double scaledInput = Math.pow(absInput, 1.6);
+        double scaledInput = Math.pow(absInput, 2.0);
 
         return sign * scaledInput;
     }

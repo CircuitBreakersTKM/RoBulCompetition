@@ -87,6 +87,9 @@ public class NetworkSubsystem {
         "Debug/Arm encoder value", 0.0);
     public static final DashboardValue<Boolean> DEBUG_LIMIT_SWICH_READING = new DashboardValue<> (
         "Debug/Limit switch reading", false);
+    public static final DashboardValue<Boolean> DEBUG_DISABLE_LASER = new DashboardValue<>(
+        "Debug/Debug disable laser", false
+    );
 
     /**
      * Initializes the NetworkSubsystem by setting up the auto mode chooser

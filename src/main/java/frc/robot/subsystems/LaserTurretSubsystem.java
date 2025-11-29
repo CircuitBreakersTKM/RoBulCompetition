@@ -16,13 +16,13 @@ public class LaserTurretSubsystem extends SubsystemBase {
     private static final double ALTITUDE_GEAR_RATIO = 100.0;
 
     // Azimuth (horizontal)
-    private static final double AZ_kP = 0.11;
+    private static final double AZ_kP = 0.10;
     private static final double AZ_kI = 0.0;
     private static final double AZ_kD = 0.02;
     private static final double AZ_kF = 0.006;
 
     // Altitude (vertical)
-    private static final double ALT_kP = 0.17;
+    private static final double ALT_kP = 0.16;
     private static final double ALT_kI = 0.0;
     private static final double ALT_kD = 0.01;
     private static final double ALT_kF = 0.0;

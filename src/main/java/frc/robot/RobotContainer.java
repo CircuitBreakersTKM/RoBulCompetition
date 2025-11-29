@@ -41,7 +41,7 @@ public class RobotContainer {
     private final QRDirectionSubsystem qrDirectionSubsystem = new QRDirectionSubsystem();
     private final ArmSubsystem armSubsystem = new ArmSubsystem(31, 32, 0);
 
-    private final Command joystickDriveCommand;
+    private Command joystickDriveCommand;
     private Command crabDriveCommand;
     private final Command centerWheels;
 
@@ -87,32 +87,32 @@ public class RobotContainer {
         joystickDriveCommand = new JoystickDriveCommand(swerve,
             () ->  { 
                 double driverAInput = MathUtil.applyDeadband(controller.getLeftX(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
-                double driverBInput = MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
+                double driverBInput = MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get()) * 0.8;
 
-                if (driverBInput > 0 && secondaryController.getPOV() == -1) { 
-                    return driverBInput;
+                if (driverBInput > 0) {
+                    if (secondaryController.getPOV() == 90 || secondaryController.getPOV() == 45 || secondaryController.getPOV() == 135) { // allow for any input thats partially right
+                        return driverBInput;
+                    }
+                    else if (secondaryController.getPOV() == 270 || secondaryController.getPOV() == 225 || secondaryController.getPOV() == 315) { // allow for any input thats partially left
+                        return -driverBInput;
+                    }
                 }
 
                 return driverAInput;
             },
             () -> {
                 double driverAInput = MathUtil.applyDeadband(controller.getLeftY(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
-                double driverBInput = MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get());
+                double driverBInput = MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get()) * 0.8;
 
-                if (driverBInput > 0) {
-                    if (secondaryController.getPOV() == 90 || secondaryController.getPOV() == 45 || secondaryController.getPOV() == 135) { // allow for any input thats partially right
-                        return -driverBInput;
-                    }
-                    else if (secondaryController.getPOV() == 270 || secondaryController.getPOV() == 225 || secondaryController.getPOV() == 315) { // allow for any input thats partially left
-                        return driverBInput;
-                    }
+                if (driverBInput > 0 && secondaryController.getPOV() == -1) { 
+                    return -driverBInput;
                 }
 
                 return driverAInput;
             },
             () -> MathUtil.applyDeadband(controller.getLeftTriggerAxis() - controller.getRightTriggerAxis(), 
                 NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
-            () -> !controller.getLeftBumperButton() || MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get()) > 0
+            () -> !controller.getLeftBumperButton() && MathUtil.applyDeadband(secondaryController.getLeftTriggerAxis(), NetworkSubsystem.JOYSTICK_DEADZONE.get()) == 0
         );
         crabDriveCommand = new CrabDriveCommand(swerve, 
             () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
@@ -243,11 +243,11 @@ public class RobotContainer {
             case SLALOM_MANUAL -> {
                 laserMoveCommand = new LaserMoveCommand(laserTurret, 
                     () -> MathUtil.applyDeadband(secondaryController.getRightX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()),
-                    () -> - MathUtil.applyDeadband(secondaryController.getRightY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
+                    () -> - MathUtil.applyDeadband(secondaryController.getLeftY(), NetworkSubsystem.JOYSTICK_DEADZONE.get())
                 );
 
                 crabDriveCommand = new CrabDriveCommand(swerve, 
-                    () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
+                    () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()) * 0.80,
                     () -> - controller.getPOV(), 
                     () -> - MathUtil.applyDeadband(controller.getLeftX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()), 
                     false);
@@ -269,7 +269,13 @@ public class RobotContainer {
                 centerWheels.schedule();
             }
             case TEST -> {
-                cameraTurnCommand.schedule();
+                crabDriveCommand = new CrabDriveCommand(swerve, 
+                    () -> MathUtil.applyDeadband(controller.getRightTriggerAxis(), NetworkSubsystem.TRIGGER_AXIS_DEADZONE.get()),
+                    () -> - controller.getPOV(), 
+                    () -> - MathUtil.applyDeadband(controller.getLeftX(), NetworkSubsystem.JOYSTICK_DEADZONE.get()), 
+                    false);
+                
+                crabDriveCommand.schedule();
             }
             default -> {}
         }

@@ -1,5 +1,7 @@
 package frc.robot.commands.auto_routines;
 
+import org.photonvision.PhotonCamera;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.commands.TrackedCommand;
@@ -37,6 +39,9 @@ public class MazeAutoCommand extends TrackedCommand {
         this.qrSubsystem = qrSubsystem;
         this.driveSpeed = driveSpeed;
         this.currentFieldHeading = 0;
+
+        PhotonCamera cam = new PhotonCamera("Arducam-b0559-1080p-swift");
+        cam.setPipelineIndex(0);
         
         addRequirements(swerveDrive, qrSubsystem);
     }

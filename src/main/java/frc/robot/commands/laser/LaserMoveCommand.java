@@ -34,8 +34,8 @@ public class LaserMoveCommand extends TrackedCommand {
         double aziSpeed = azimuthSupplier.getAsDouble();
         double altSpeed = altitudeSupplier.getAsDouble();
 
-        aziSpeed = MathHelper.ScaleRotInput(aziSpeed) * 0.4;
-        altSpeed = MathHelper.ScaleRotInput(altSpeed) * 0.4;
+        aziSpeed = MathHelper.ScaleLaserInput(aziSpeed) * 0.1;
+        altSpeed = MathHelper.ScaleLaserInput(altSpeed) * 0.1;
 
         laserTurret.setSpeed(aziSpeed, altSpeed);
     }

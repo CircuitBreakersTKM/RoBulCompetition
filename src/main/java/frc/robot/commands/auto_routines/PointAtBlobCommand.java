@@ -5,6 +5,7 @@ import org.photonvision.PhotonCamera;
 import edu.wpi.first.wpilibj.Notifier;
 import frc.robot.commands.TrackedCommand;
 import frc.robot.subsystems.LaserTurretSubsystem;
+import frc.robot.subsystems.network.NetworkSubsystem;
 
 public class PointAtBlobCommand extends TrackedCommand {
     private final LaserTurretSubsystem laserTurret;
@@ -14,22 +15,22 @@ public class PointAtBlobCommand extends TrackedCommand {
     
     // Target offset from camera center (in degrees)
     // Positive values move target right/up in camera frame
-    private static final double TARGET_YAW_OFFSET = -5.0; // horizontal offset
-    private static final double TARGET_PITCH_OFFSET = 0.0; // vertical offset (positive if laser is below camera)
+    private static final double TARGET_YAW_OFFSET = -1.3; // horizontal offset
+    private static final double TARGET_PITCH_OFFSET = 0.3; // vertical offset (positive if laser is below camera)
     
     private double filteredYaw = 0.0;
     private double filteredPitch = 0.0;
     private double prevFilteredYaw = 0.0;
     private double prevFilteredPitch = 0.0;
 
-    private static final double alpha = 0.4;
+    private static final double alpha = 0.35;
 
     private static final double frequencyHz = 100.0;
 
     public PointAtBlobCommand(LaserTurretSubsystem laserTurret) {
         this.laserTurret = laserTurret;
         this.camera = new PhotonCamera("Arducam-b0559-1080p-swift");
-        this.camera.setPipelineIndex(0);
+        this.camera.setPipelineIndex(1);
 
         this.notifier = new Notifier(this::loop);
 
@@ -100,6 +101,6 @@ public class PointAtBlobCommand extends TrackedCommand {
     @Override
     public boolean isFinished() {
         // Never finish - continuous tracking until command is interrupted
-        return false;
+        return NetworkSubsystem.DEBUG_DISABLE_LASER.get();
     }
 }
